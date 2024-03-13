@@ -8,7 +8,7 @@ router.get('/:userId', userControl.getSingleUser);
 
 router.get('/', userControl.getAllUsers);
 
-router.put('/:userId', userControl.updateUser);
+router.put('/:userId', body('email').trim().isEmail().isLowercase().notEmpty(), userControl.updateUser);
 
 router.delete('/:userId', userControl.deleteUser);
 

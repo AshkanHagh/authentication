@@ -58,7 +58,7 @@ exports.updateUser = async (req, res, next) => {
 
     try {
         const errors = validationResult(req);
-        if(!errors.isEmpty) {
+        if(!errors.isEmpty()) {
 
             const error = new Error('invalid data from your data, please check your value');
             error.statusCode = 422;
