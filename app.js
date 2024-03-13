@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const authRoute = require('./routes/auth');
+const userRoute = require('./routes/user');
 
 const app = express();
 require('dotenv').config();
@@ -29,6 +30,7 @@ app.use((error, req, res, next) => {
 
 
 app.use('/auth', authRoute);
+app.use('/user', userRoute);
 
 
 mongoose.connect(process.env.Mongo);
