@@ -33,6 +33,6 @@ app.use('/auth', authRoute);
 app.use('/user', userRoute);
 
 
-mongoose.connect(process.env.Mongo);
+mongoose.connect(process.env.MONGODB_URL);
 
 app.listen(PORT, () => console.log(`server runnign on port ${PORT}`));
