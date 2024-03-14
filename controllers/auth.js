@@ -70,7 +70,7 @@ exports.login = async (req, res, next) => {
             throw error;
         }
 
-        const token = jwt.sign({email : user.email, userId : user._id}, 'Authentication', {expiresIn : '1h'});
+        const token = jwt.sign({email : user.email, userId :user._id.toString()}, 'Authentication', {expiresIn : '1h'});
 
         res.status(200).json({message : 'Wolcome', token : token, userId : user._id});
 
