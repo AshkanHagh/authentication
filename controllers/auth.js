@@ -16,21 +16,28 @@ exports.signup = async (req, res, next) => {
             throw error;
         }
 
+        const { username, email, password, gender } = req.body;
+
+        const isUsernameExists = await User.findOne({username});
+        if(isUsernameExists) {
+
+            const error = new Error('Username already exists');
+            error.statusCode = 422;
+            throw error;
+        }
+
         const salt = await bcrypt.genSalt(12);
-        const hashedPass = await bcrypt.hash(req.body.password, salt);
+        const hashedPass = await bcrypt.hash(password, salt);
 
         const user = new User({
-            
-            username : req.body.username,
-            email : req.body.email,
-            password : hashedPass
+            username,
+            email,
+            password : hashedPass,
         });
 
-        const result = await user.save();
+        await user.save();
 
-        const {password, ...others} = user._doc;
-
-        res.status(201).json({message : 'User has been created...', user : others})
+        res.status(201).json({message : 'Account has been created', userId : user._id});
 
     } catch (error) {
         
@@ -38,10 +45,11 @@ exports.signup = async (req, res, next) => {
 
             error.statusCode = 500;
         }
-        next(error)
+        next(error);
     }
 
 }
+
 
 exports.login = async (req, res, next) => {
 
@@ -54,30 +62,32 @@ exports.login = async (req, res, next) => {
             throw error;
         }
 
-        const user = await User.findOne({email : req.body.email}).select('-password');
+        const { email, password } = req.body;
+
+        const user = await User.findOne({email});
         if(!user) {
 
-            const error = new Error('Nothing found please check your email');
+            const error = new Error('Wrong Email, Please check your email');
             error.statusCode = 422;
             throw error;
         }
 
-        const password = await bcrypt.compare(req.body.password, user.password);
-        if(!password) {
+        const isPassword = await bcrypt.compare(password, user.password);
+        if(!isPassword) {
 
-            const error = new Error('Wrong password');
+            const error = new Error('Wrong Password, please check your password');
             error.statusCode = 422;
             throw error;
         }
 
-        const token = jwt.sign({email : user.email, userId :user._id.toString()}, process.env.JWT_SECRET, {expiresIn : '1h'});
+        const token = jwt.sign({email : user.email, userId : user._id}, process.env.JWT_SECRET, {expiresIn : '1d'});
 
-        res.status(200).json({message : 'Welcome', token : token, userId : user._id});
-
+        res.status(201).json({message : 'Welcome', userId : user._id, token : token});
+        
     } catch (error) {
         
         if(!error.statusCode) {
-            
+
             error.statusCode = 500;
         }
         next(error);

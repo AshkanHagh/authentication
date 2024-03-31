@@ -4,13 +4,11 @@ const { body } = require('express-validator');
 const userControl = require('../controllers/user');
 
 
-router.get('/:userId', userControl.getSingleUser);
+router.get('/:id', userControl.getSingleUser);
 
 router.get('/', userControl.getAllUsers);
 
-router.put('/:userId', body('email').trim().isEmail().isLowercase().notEmpty(), userControl.updateUser);
-
-router.delete('/:userId', userControl.deleteUser);
+router.put('/', body('email').trim().isEmail().isLowercase().notEmpty(), userControl.updateUser);
 
 
 module.exports = router;
