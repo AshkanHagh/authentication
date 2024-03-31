@@ -54,7 +54,7 @@ exports.login = async (req, res, next) => {
             throw error;
         }
 
-        const user = await User.findOne({email : req.body.email});
+        const user = await User.findOne({email : req.body.email}).select('-password');
         if(!user) {
 
             const error = new Error('Nothing found please check your email');
@@ -70,7 +70,7 @@ exports.login = async (req, res, next) => {
             throw error;
         }
 
-        const token = jwt.sign({email : user.email, userId :user._id.toString()}, 'Authentication', {expiresIn : '1h'});
+        const token = jwt.sign({email : user.email, userId :user._id.toString()}, process.env.JWT_SECRET, {expiresIn : '1h'});
 
         res.status(200).json({message : 'Welcome', token : token, userId : user._id});
 

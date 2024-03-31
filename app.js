@@ -23,7 +23,7 @@ app.use((error, req, res, next) => {
     const status = error.statusCode || 500;
     const message = error.message;
 
-    res.status(status).json({mesasge : message});
+    res.status(status).json({message});
 
     next();
 });
@@ -35,4 +35,4 @@ app.use('/user', userRoute);
 
 mongoose.connect(process.env.MONGODB_URL);
 
-app.listen(PORT, () => console.log(`server runnign on port ${PORT}`));
+app.listen(PORT, () => console.log(`server running on port ${PORT}`));

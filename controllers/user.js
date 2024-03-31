@@ -93,7 +93,7 @@ exports.updateUser = async (req, res, next) => {
             }
         });
 
-        res.status(201).json({message : 'user has been updated', userid : user._id});
+        res.status(201).json({message : 'user has been updated', userId : user._id});
 
     } catch (error) {
         
