@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
 
-const dbUrl : string = process.env.DATABASE_URL || ''
+const dbUrl : string = process.env.DATABASE_URL || '';
 
 const connectDB = async () => {
 
     try {
         const conn = await mongoose.connect(dbUrl);
-        console.log(`Database connected to ${conn.connection.host}`);
-        
+        console.log(`Database connected on ${conn.connection.host}`);
+
     } catch (error) {
         
         console.log('Database connection failed');

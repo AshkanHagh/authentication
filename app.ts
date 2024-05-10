@@ -1,23 +1,26 @@
-import express from 'express';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-
-import { ErrorMiddleware } from './middlewares/error';
-import authRouter from './routes/auth.route';
-
+import express, { type NextFunction, type Request, type Response } from 'express';
 export const app = express();
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { ErrorMiddleware } from './middlewares/error';
 
-app.use(express.json({limit : '10mb'}));
-app.use(cors({origin : process.env.ORIGIN}));
+import userRouter from './routes/user.route';
+
+app.use(express.json({ limit : '50mb' }));
 app.use(cookieParser());
+app.use(cors({
+    origin : process.env.ORIGIN
+}));
 
-app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/auth', userRouter);
 
-app.get('/', (req, res) => res.status(200).json({message : 'Welcome'}));
-app.get('*', (req, res, next) => {
+app.get('/', (req : Request, res : Response, next : NextFunction) => {
+    res.status(200).json({message : 'Success'});
+});
+
+app.get('*', (req : Request, res : Response, next : NextFunction) => {
     const error = new Error(`Route ${req.originalUrl} not found`) as any;
     next(error);
 });
-
 
 app.use(ErrorMiddleware);

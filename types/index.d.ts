@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import type { Document } from 'mongoose';
 
 export type IError = {
     statusCode : Number
@@ -9,32 +9,46 @@ export type IError = {
 }
 
 export interface IUserModel extends Document {
-    fullName : string
+    name : string
     email : string
     password : string
-    profilePic : string
-    gender : string
+    avatar : {
+        public_id : string
+        url : string
+    }
+    role : string
+    isVerified : boolean
+    comparePassword : (password : string) => Promise<boolean>
+    SignAccessToken : () => string
+    SignRefreshToken : () => string
 }
 
 export interface IRegisterBody {
-    fullName : string
+    name : string
     email : string
     password : string
-    confirmPassword? : string
-    gender : string
+    avatar? : string
 }
 
-export interface ILoginBody {
+export interface ILoginRequest {
     email : string
     password : string
 }
 
-export interface IVerifyCode {
-    activationCode : string
-    activationToken : string
-}
-
-export interface IActivationCode {
+export interface IActivationToken {
     token : string
     activationCode : string
+}
+
+export interface IActivationRequest {
+    activationToken : string
+    activationCode : string
+}
+
+export interface ITokenOptions {
+    expires : Date
+    maxAge : number
+    httpOnly : boolean
+    sameSite : 'lax' | 'strict' | 'none' | undefined
+    secure? : boolean
 }

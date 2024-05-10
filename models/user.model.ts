@@ -1,10 +1,12 @@
 import { Schema, model } from 'mongoose';
+import bcrypt from 'bcrypt';
+import jwt, { type Secret } from 'jsonwebtoken';
 import type { IUserModel } from '../types';
 
 const UserSchema = new Schema<IUserModel>({
-    fullName : {
+    name : {
         type : String,
-        required : [true, 'Please enter your fullName']
+        required : [true, 'Please enter your name']
     },
     email : {
         type : String,
@@ -14,20 +16,46 @@ const UserSchema = new Schema<IUserModel>({
     password : {
         type : String,
         required : [true, 'Please enter your password'],
-        minlength : [6, 'Password must be more than 6 characters']
+        minlength : [6, 'Password most be at least 6 characters']
     },
-    profilePic : {
-        type : String,
-        default : ''
+    avatar : {
+        public_id : String,
+        url : String
     },
-    gender : {
+    role : {
         type : String,
-        enum : ['male', 'female'],
-        required : [true, 'Please enter your sex']
-    }
+        default : 'user'
+    },
+    isVerified : {
+        type : Boolean,
+        default : false
+    },
 
 }, {timestamps : true});
 
-const User = model<IUserModel>('User', UserSchema);
+
+UserSchema.pre<IUserModel>('save', async function(next) {
+
+    if(!this.isModified('password')) {
+        next();
+    }
+
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+UserSchema.methods.SignAccessToken = function () {
+    return jwt.sign({id : this._id}, process.env.ACCESS_TOKEN as Secret || '');
+}
+
+UserSchema.methods.SignRefreshToken = function () {
+    return jwt.sign({id : this._id}, process.env.REFRESH_TOKEN as Secret || '');
+}
+
+UserSchema.methods.comparePassword = async function (enteredPassword : string) : Promise<boolean> {
+    return await bcrypt.compare(enteredPassword, this.password);
+}
+
+const User = model('User', UserSchema);
 
 export default User;
