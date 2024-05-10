@@ -4,7 +4,7 @@ import { authorizeRoles, isAuthenticated } from '../middlewares/auth';
 
 const router = Router();
 
-router.post('/signup', register);
+router.post('/register', register);
 
 router.post('/active', activateUser);
 
