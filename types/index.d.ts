@@ -4,9 +4,6 @@ import type { Request } from 'express';
 export type IError = {
     statusCode : Number
     message : string
-    name? : string
-    path? : string
-    keyValue? : any
 }
 
 export interface IUserModel extends Document {

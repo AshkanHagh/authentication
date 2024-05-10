@@ -18,18 +18,10 @@ const UserSchema = new Schema<IUserModel>({
         required : [true, 'Please enter your password'],
         minlength : [6, 'Password most be at least 6 characters']
     },
-    avatar : {
-        public_id : String,
-        url : String
-    },
     role : {
         type : String,
         default : 'user'
-    },
-    isVerified : {
-        type : Boolean,
-        default : false
-    },
+    }
 
 }, {timestamps : true});
 

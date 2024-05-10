@@ -5,10 +5,10 @@ import sendEmail from '../utils/sendMail';
 import ErrorHandler from '../utils/errorHandler';
 import { CatchAsyncError } from '../middlewares/catchAsyncError';
 import { createActivationToken } from '../utils/activationToken';
-import { validateLogin, validateSignup } from '../validation/user.validation';
+import { validateLogin, validateSignup } from '../validation/joi';
 import { accessTokenOption, refreshTokenOption, sendToken } from '../utils/jwt';
-import type { IActivationRequest, ILoginRequest, IRegisterBody, IUserModel } from '../types';
 import { redis } from '../db/redis';
+import type { IActivationRequest, ILoginRequest, IRegisterBody, IUserModel } from '../types';
 
 export const register = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
 
@@ -58,7 +58,7 @@ export const activateUser = CatchAsyncError(async (req : Request, res : Response
             name, email, password
         });
 
-        res.status(201).json({message : 'Account has been created'});
+        res.status(201).json({success : true, message : 'Account has been created'});
 
     } catch (error : any) {
         return next(new ErrorHandler(error.message, 400)); 
@@ -77,6 +77,7 @@ export const login = CatchAsyncError(async (req : Request, res : Response, next 
         const isPasswordMatch = await user!.comparePassword(password);
 
         if(!user || !isPasswordMatch) return next(new ErrorHandler('Invalid email or password', 400));
+        user.password = '';
 
         sendToken(user, 200, res);
 
@@ -112,13 +113,11 @@ export const updateAccessToken = CatchAsyncError(async (req : Request, res : Res
         if(!decoded) return next(new ErrorHandler(message, 400));
 
         const session  = await redis.get(decoded.id as string);
-
         if(!session) return next(new ErrorHandler(message, 400));
 
         const user = JSON.parse(session);
 
         const accessToken = jwt.sign({id : user._id}, process.env.ACCESS_TOKEN as string, {expiresIn : '5m'});
-
         const refreshToken = jwt.sign({id : user._id}, process.env.REFRESH_TOKEN as string, {expiresIn : '7d'});
 
         res.cookie('access_token', accessToken, accessTokenOption);
