@@ -1,5 +1,5 @@
 {
-  "name": "management-system",
+  "name": "authentication",
   "module": "server.ts",
   "type": "module",
   "scripts": {
