@@ -1,13 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
-import jwt, { type Secret } from 'jsonwebtoken';
+import jwt, { type JwtPayload, type Secret } from 'jsonwebtoken';
 import User from '../models/user.model';
 import sendEmail from '../utils/sendMail';
 import ErrorHandler from '../utils/errorHandler';
 import { CatchAsyncError } from '../middlewares/catchAsyncError';
 import { createActivationToken } from '../utils/activationToken';
-import type { IActivationRequest, ILoginRequest, IRegisterBody, IUserModel } from '../types';
 import { validateLogin, validateSignup } from '../validation/user.validation';
-import { sendToken } from '../utils/jwt';
+import { accessTokenOption, refreshTokenOption, sendToken } from '../utils/jwt';
+import type { IActivationRequest, ILoginRequest, IRegisterBody, IUserModel } from '../types';
+import { redis } from '../db/redis';
 
 export const register = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
 
@@ -90,7 +91,40 @@ export const logout = CatchAsyncError(async (req : Request, res : Response, next
         res.cookie('access_token', '', {maxAge : 1});
         res.cookie('refresh_token', '', {maxAge : 1});
 
+        const userId = req.user?._id || '';
+        redis.del(userId);
+
         res.status(200).json({message : 'Logged out successfully'});
+
+    } catch (error : any) {
+        return next(new ErrorHandler(error.message, 400));
+    }
+});
+
+export const updateAccessToken = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
+
+    try {
+        const refresh_Token = req.cookies.refresh_token as string;
+        const decoded = jwt.verify(refresh_Token, process.env.REFRESH_TOKEN as string) as JwtPayload;
+
+        const message = 'Could not refresh token ';
+
+        if(!decoded) return next(new ErrorHandler(message, 400));
+
+        const session  = await redis.get(decoded.id as string);
+
+        if(!session) return next(new ErrorHandler(message, 400));
+
+        const user = JSON.parse(session);
+
+        const accessToken = jwt.sign({id : user._id}, process.env.ACCESS_TOKEN as string, {expiresIn : '5m'});
+
+        const refreshToken = jwt.sign({id : user._id}, process.env.REFRESH_TOKEN as string, {expiresIn : '7d'});
+
+        res.cookie('access_token', accessToken, accessTokenOption);
+        res.cookie('refresh_token', refreshToken, refreshTokenOption);
+
+        res.status(200).json({accessToken});
 
     } catch (error : any) {
         return next(new ErrorHandler(error.message, 400));

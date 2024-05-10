@@ -1,4 +1,5 @@
 import type { Document } from 'mongoose';
+import type { Request } from 'express';
 
 export type IError = {
     statusCode : Number
@@ -21,6 +22,14 @@ export interface IUserModel extends Document {
     comparePassword : (password : string) => Promise<boolean>
     SignAccessToken : () => string
     SignRefreshToken : () => string
+}
+
+declare global {
+    namespace Express {
+        interface Request {
+            user? : IUserModel
+        }
+    }
 }
 
 export interface IRegisterBody {

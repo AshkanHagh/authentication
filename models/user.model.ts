@@ -45,11 +45,11 @@ UserSchema.pre<IUserModel>('save', async function(next) {
 });
 
 UserSchema.methods.SignAccessToken = function () {
-    return jwt.sign({id : this._id}, process.env.ACCESS_TOKEN as Secret || '');
+    return jwt.sign({id : this._id}, process.env.ACCESS_TOKEN as Secret || '', {expiresIn : '5m'});
 }
 
 UserSchema.methods.SignRefreshToken = function () {
-    return jwt.sign({id : this._id}, process.env.REFRESH_TOKEN as Secret || '');
+    return jwt.sign({id : this._id}, process.env.REFRESH_TOKEN as Secret || '', {expiresIn : '7d'});
 }
 
 UserSchema.methods.comparePassword = async function (enteredPassword : string) : Promise<boolean> {
