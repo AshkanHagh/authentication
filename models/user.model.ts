@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Model, Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt, { type Secret } from 'jsonwebtoken';
 import type { IUserModel } from '../types';
@@ -15,8 +15,8 @@ const UserSchema = new Schema<IUserModel>({
     },
     password : {
         type : String,
-        required : [true, 'Please enter your password'],
-        minlength : [6, 'Password most be at least 6 characters']
+        minlength : [6, 'Password most be at least 6 characters'],
+        select : false
     },
     role : {
         type : String,
@@ -27,7 +27,6 @@ const UserSchema = new Schema<IUserModel>({
 
 
 UserSchema.pre<IUserModel>('save', async function(next) {
-
     if(!this.isModified('password')) {
         next();
     }
@@ -41,13 +40,13 @@ UserSchema.methods.SignAccessToken = function () {
 }
 
 UserSchema.methods.SignRefreshToken = function () {
-    return jwt.sign({id : this._id}, process.env.REFRESH_TOKEN as Secret || '', {expiresIn : '7d'});
+    return jwt.sign({id : this._id}, process.env.REFRESH_TOKEN as Secret || '', {expiresIn : '3d'});
 }
 
 UserSchema.methods.comparePassword = async function (enteredPassword : string) : Promise<boolean> {
     return await bcrypt.compare(enteredPassword, this.password);
 }
 
-const User = model('User', UserSchema);
+const User : Model<IUserModel> = model('User', UserSchema);
 
 export default User;

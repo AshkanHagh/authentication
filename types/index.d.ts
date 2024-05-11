@@ -7,6 +7,7 @@ export type IError = {
 }
 
 export interface IUserModel extends Document {
+    _doc? : any
     name : string
     email : string
     password : string
@@ -57,4 +58,10 @@ export interface ITokenOptions {
     httpOnly : boolean
     sameSite : 'lax' | 'strict' | 'none' | undefined
     secure? : boolean
+}
+
+export interface ISocialBody {
+    name : string
+    email : string
+    avatar : string
 }

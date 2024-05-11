@@ -16,3 +16,11 @@ const loginSchema = Joi.object({
 });
 
 export const validateLogin = validator(loginSchema);
+
+const socialAuthSchema = Joi.object({
+    name : Joi.string().required(),
+    email : Joi.string().email().required(),
+    avatar : Joi.string()
+});
+
+export const validateSocialAuth = validator(socialAuthSchema);
