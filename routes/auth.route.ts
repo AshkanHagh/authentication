@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { activateUser, login, logout, register, updateAccessToken } from '../controllers/auth.controller';
+import { activateUser, login, logout, register, socialAuth, updateAccessToken } from '../controllers/auth.controller';
 import { authorizeRoles, isAuthenticated } from '../middlewares/auth';
 
 const router = Router();
@@ -13,5 +13,7 @@ router.post('/login', login);
 router.get('/logout', isAuthenticated, logout);
 
 router.get('/refresh', updateAccessToken);
+
+router.post('/social-auth', socialAuth);
 
 export default router;
