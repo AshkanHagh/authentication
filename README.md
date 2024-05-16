@@ -1,6 +1,6 @@
 # Authentication REST API With [Bun](https://bun.sh/), [Express](https://expressjs.com/), [MongoDB](https://www.mongodb.com/), [TypeScript](https://www.typescriptlang.org/)
 
-# [V 1.2.0](https://jwtauthentication.liara.run/)
+# [V 1.2.0](https://authentication-tk68.onrender.com/)
 
 ### Features :
 
