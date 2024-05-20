@@ -1,6 +1,6 @@
 # Authentication REST API With [Bun](https://bun.sh/), [Express](https://expressjs.com/), [MongoDB](https://www.mongodb.com/), [TypeScript](https://www.typescriptlang.org/)
 
-# [V 1.2.0](https://authentication-tk68.onrender.com/)
+# [Demo](https://authentication-tk68.onrender.com/)
 
 ### Features :
 
@@ -8,7 +8,6 @@
 * Data validation with [Joi](https://joi.dev/)
 * Verify email code with [Nodemailer](https://www.nodemailer.com/)
 * [Redis](https://redis.io/) session store
-* 
 
 ### Description 
 My api allows you to easily integrate user authentication into different projects.
