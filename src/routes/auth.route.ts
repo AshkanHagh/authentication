@@ -1,19 +1,25 @@
-import { Router } from 'express';
-import { activateUser, login, logout, register, socialAuth, updateAccessToken } from '../controllers/auth.controller';
-import { authorizeRoles, isAuthenticated } from '../middlewares/auth';
+import { Router, type NextFunction, type Request, type Response } from 'express';
+import validationMiddleware from '../middlewares/validation.body';
+import { LoginBody, RegisterBody, VerifyAccountBody } from '../validations/Joi';
+import { login, logout, refreshToken, register, verifyAccount } from '../controllers/auth.controller';
+import { RouteNowFoundError } from '../libs/utils';
+import { isAuthenticated } from '../middlewares/auth';
+// import { loginRateLimit, requestVerificationCodeRateLimit } from '../middlewares/rate-limit';
 
 const router = Router();
 
-router.post('/register', register);
+router.post('/register', validationMiddleware(RegisterBody), register);
 
-router.post('/active', activateUser);
+router.post('/verify', validationMiddleware(VerifyAccountBody), verifyAccount);
 
-router.post('/login', login);
+router.post('/login', validationMiddleware(LoginBody), login);
 
 router.get('/logout', isAuthenticated, logout);
 
-router.get('/refresh', updateAccessToken);
+router.get('/refresh', refreshToken);
 
-router.post('/social-auth', socialAuth);
+router.all('*', (req : Request, res : Response, next : NextFunction) => {
+    next(new RouteNowFoundError(`Route :${req.originalUrl} not found`));
+}); 
 
 export default router;

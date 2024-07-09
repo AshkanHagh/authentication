@@ -1,35 +1,35 @@
-import type { Request, Response, NextFunction } from 'express';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { CatchAsyncError } from './catchAsyncError';
-import ErrorHandler from '../utils/errorHandler';
-import jwt, { type JwtPayload, type Secret } from 'jsonwebtoken';
-import User from '../models/user.model';
-import { redis } from '../db/redis';
+import type { NextFunction, Request, Response } from 'express';
+import ErrorHandler from '../libs/utils/errorHandler';
+import { AccessTokenInvalidError, LoginRequiredError, RoleForbiddenError } from '../libs/utils';
+import type { TErrorHandler, TInferSelectUser } from '../types/index.type';
+import { getAllFromHashCache } from '../database/cache/index.cache';
 
 export const isAuthenticated = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
-
     try {
-        const accessToken = req.cookies.access_token;
-        if(!accessToken) return next(new ErrorHandler('Please login to access this recourse', 400));
+        const accessToken : string = req.cookies['access_token'];
+        if(!accessToken) return next(new LoginRequiredError());
 
-        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN as Secret) as JwtPayload;
-        if(!decoded) return next(new ErrorHandler('Access token is not valid', 400));
+        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN as string) as JwtPayload & TInferSelectUser;
+        if(!decoded) return next(new AccessTokenInvalidError());
 
-        const user = await redis.get(decoded.id);
-        if(!user) return next(new ErrorHandler('User not found', 400));
+        const user : Omit<TInferSelectUser, 'password'> = await getAllFromHashCache(`user:${decoded.id}`);
+        if(Object.keys(user).length <= 0) return next(new LoginRequiredError());
 
-        req.user = JSON.parse(user);
-
+        req.user = user;
         next();
-
-    } catch (error : any) {
-        return next(new ErrorHandler(error.message, 400));
+        
+    } catch (err) {
+        const error = err as TErrorHandler;
+        return next(new ErrorHandler(`An error occurred : ${error.message}`, error.statusCode));
     }
 });
 
 export const authorizeRoles = (...role : string[]) => {
     return (req : Request, res : Response, next : NextFunction) => {
         if(!role.includes(req.user?.role || '')) {
-            return next(new ErrorHandler(`Role : ${req.user?.role} is not allowed to access this recurse`, 400));
+            return next(new RoleForbiddenError(req.user?.role || 'unknown'));
         }
         next();
     }
