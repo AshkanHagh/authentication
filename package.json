@@ -1,10 +1,10 @@
 {
   "name": "authentication",
-  "module": "server.ts",
+  "module": "src/server.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch server.ts",
-    "start": "bun server.ts"
+    "dev": "bun --watch src/server.ts",
+    "start": "bun src/server.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
