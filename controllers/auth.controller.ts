@@ -9,6 +9,7 @@ import { validateLogin, validateSignup, validateSocialAuth } from '../validation
 import { accessTokenOption, refreshTokenOption, sendToken } from '../utils/jwt';
 import { redis } from '../db/redis';
 import type { IActivationRequest, ILoginRequest, IRegisterBody, ISocialBody, IUserModel } from '../types';
+import emailEventEmitter from '../events/email.event';
 
 export const register = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
 
@@ -28,9 +29,7 @@ export const register = CatchAsyncError(async (req : Request, res : Response, ne
         const activationToken = createActivationToken(user);
         const activationCode = activationToken.activationCode;
 
-        await sendEmail({email : user.email, subject : 'Activate your account', text : 'Please Past the blow code to active your account', html : `
-            Activation Code is ${activationCode}
-        `});
+        emailEventEmitter.emit('registerEmail', user.email);
 
         res.status(200).json({success : true, message : 'Please check your email', activationToken : activationToken.token});
 
