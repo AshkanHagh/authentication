@@ -18,6 +18,10 @@ router.get('/logout', isAuthenticated, logout);
 
 router.get('/refresh', refreshToken);
 
+router.get('/', isAuthenticated, (req : Request, res : Response, next : NextFunction) => {
+    res.status(200).json({success : true, message : 'success'});
+}); 
+
 router.all('*', (req : Request, res : Response, next : NextFunction) => {
     next(new RouteNowFoundError(`Route :${req.originalUrl} not found`));
 }); 

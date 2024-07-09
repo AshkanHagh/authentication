@@ -2,16 +2,19 @@ import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { CatchAsyncError } from './catchAsyncError';
 import type { NextFunction, Request, Response } from 'express';
 import ErrorHandler from '../libs/utils/errorHandler';
-import { AccessTokenInvalidError, LoginRequiredError, RoleForbiddenError } from '../libs/utils';
+import { AccessTokenInvalidError, LoginRequiredError } from '../libs/utils';
 import type { TErrorHandler, TInferSelectUser } from '../types/index.type';
 import { getAllFromHashCache } from '../database/cache/index.cache';
 
 export const isAuthenticated = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
     try {
-        const accessToken : string = req.cookies['access_token'];
-        if(!accessToken) return next(new LoginRequiredError());
+        const authHeader = req.headers.authorization;
+        if(!authHeader || !authHeader.startsWith('Bearer ')) return next(new ErrorHandler('Please login to access this recourse', 400));
 
-        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN as string) as JwtPayload & TInferSelectUser;
+        const token = authHeader.split(' ')[1];
+        if(!token) return next(new ErrorHandler('Access token is not valid', 400));
+
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN as string) as JwtPayload & TInferSelectUser;
         if(!decoded) return next(new AccessTokenInvalidError());
 
         const user : Omit<TInferSelectUser, 'password'> = await getAllFromHashCache(`user:${decoded.id}`);
@@ -25,12 +28,3 @@ export const isAuthenticated = CatchAsyncError(async (req : Request, res : Respo
         return next(new ErrorHandler(`An error occurred : ${error.message}`, error.statusCode));
     }
 });
-
-export const authorizeRoles = (...role : string[]) => {
-    return (req : Request, res : Response, next : NextFunction) => {
-        if(!role.includes(req.user?.role || '')) {
-            return next(new RoleForbiddenError(req.user?.role || 'unknown'));
-        }
-        next();
-    }
-}
