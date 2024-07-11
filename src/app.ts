@@ -13,7 +13,10 @@ const app = express();
 app.use(express.json({limit : '10mb'}));
 app.use(express.urlencoded({extended : true}));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+    origin : process.env.ORIGIN, methods : ['POST', 'GET'],
+    allowedHeaders : ['Authorization', 'Content-Type', 'Access-Control-Allow-Credentials'], credentials : true
+}));
 app.use(helmet());
 app.use(helmet({crossOriginResourcePolicy : {policy : 'cross-origin'}}));
 
