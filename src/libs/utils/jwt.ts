@@ -9,13 +9,13 @@ const refreshTokenExpire : number = parseInt(process.env.REFRESH_TOKEN_EXPIRE);
 export const accessTokenOption = <TCookieOptions>{
     expires : new Date(Date.now() + accessTokenExpire * 24 * 60 * 60 * 1000),
     maxAge : accessTokenExpire * 24 * 60 * 60 * 1000,
-    httpOnly : true, sameSite : 'none'
+    httpOnly : true, sameSite : 'lax'
 }
 
 export const refreshTokenOption = <TCookieOptions>{
     expires : new Date(Date.now() + refreshTokenExpire * 24 * 60 * 60 * 1000),
     maxAge : refreshTokenExpire * 24 * 60 * 60 * 1000,
-    httpOnly : true, sameSite : 'none'
+    httpOnly : true, sameSite : 'lax'
 }
 
 export const sendToken = (user : TInferSelectUser, res : Response, tokenFor : 'login' | 'refresh') => {
