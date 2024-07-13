@@ -60,7 +60,7 @@ export const refreshTokenService = async (refreshToken : string) : Promise<TInfe
         if(!decoded) throw new LoginRequiredError();
 
         const session : TInferSelectUser = await getAllFromHashCache(`user:${decoded.id}`);
-        if(Object.keys(session).length <= 0) throw new TokenRefreshError();
+        if(Object.keys(session).length == 0) throw new TokenRefreshError();
 
         return session;
         

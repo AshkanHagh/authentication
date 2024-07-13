@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { CatchAsyncError } from '../middlewares/catchAsyncError';
 import type { TActivationToken, TInferSelectUser } from '../types/index.type';
 import { loginService, refreshTokenService, registerService, verifyAccountService } from '../services/auth.service';
-import { sendToken } from '../libs/utils';
+import { LoginRequiredError, sendToken } from '../libs/utils';
 import { deleteFromCache } from '../database/cache/index.cache';
 
 export const register = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
@@ -56,6 +56,7 @@ export const logout = CatchAsyncError(async (req : Request, res : Response, next
 export const refreshToken = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
     try {
         const refreshToken : string = req.cookies['refresh_token'];
+        if(!refreshToken) return next(new LoginRequiredError());
         const user : TInferSelectUser = await refreshTokenService(refreshToken);
 
         req.user = user;
@@ -63,6 +64,7 @@ export const refreshToken = CatchAsyncError(async (req : Request, res : Response
         res.status(200).json({success : true, accessToken});
         
     } catch (error) {
+        console.log(error);
         return next(error);
     }
 });
