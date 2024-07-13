@@ -13,7 +13,6 @@
     "vercel-build": "echo hello vercel"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
     "@types/bun": "latest",
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
@@ -30,7 +29,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.31.2",
@@ -40,6 +38,7 @@
     "joi": "^17.13.1",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.9.13",
-    "postgres": "^3.4.4"
+    "postgres": "^3.4.4",
+    "zod": "^3.23.8"
   }
 }
