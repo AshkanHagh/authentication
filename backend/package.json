@@ -1,0 +1,33 @@
+{
+  "name": "hono-auth",
+  "module": "src/server.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun src/server.ts",
+    "dev": "bun --watch src/server.ts",
+    "sentry:build": "bunx tsc",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org haghdoost --project auth-fullstack ./dist && sentry-cli sourcemaps upload --org haghdoost --project auth-fullstack ./dist"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/nodemailer": "^6.4.15",
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0",
+    "typescript-eslint": "^8.0.1"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.2.2",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "@sentry/bun": "^8.26.0",
+    "@sentry/cli": "^2.33.1",
+    "bcrypt": "^5.1.1",
+    "hono": "^4.5.5",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.14",
+    "stripe": "^16.8.0",
+    "zod": "^3.23.8"
+  }
+}
