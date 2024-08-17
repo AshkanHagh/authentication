@@ -1,32 +1,15 @@
-import express, { type NextFunction, type Request, type Response } from 'express';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import helmet from 'helmet';
+import './configs/instrument';
+import { Hono, type Context} from 'hono';
+import { ErrorMiddleware } from './libs/utils/errorHandler';
+import { createRouteNotFoundError } from './libs/utils/customErrors';
+import { logger } from 'hono/logger';
 
-import authRouter from './routes/auth.route';
+const app = new Hono();
 
-import { RouteNowFoundError } from './libs/utils';
-import { ErrorMiddleware } from './middlewares/error';
+app.use(logger());
 
-const app = express();
+app.all('/', (context : Context) => context.json({success : true, message : 'Welcome to hono-auth'}, 200));
+app.notFound((context: Context) => {throw createRouteNotFoundError(`Route : ${context.req.url} not found`)});
+app.onError(ErrorMiddleware);
 
-app.use(express.json({limit : '10mb'}));
-app.use(express.urlencoded({extended : true}));
-app.use(cookieParser());
-app.use(cors({
-    origin : process.env.ORIGIN, methods : ['POST', 'GET'],
-    allowedHeaders : ['Authorization', 'Content-Type', 'Access-Control-Allow-Credentials'], credentials : true
-}));
-app.use(helmet());
-app.use(helmet({crossOriginResourcePolicy : {policy : 'cross-origin'}}));
-
-app.get('/', (req : Request, res : Response) => res.status(200).json({success : true, message : 'Welcome'}));
-
-app.use('/api/v2/auth', authRouter);
-
-app.all('*', (req : Request, res : Response, next : NextFunction) => {
-    next(new RouteNowFoundError(`Route : ${req.originalUrl} not found`));
-});
-
-app.use(ErrorMiddleware);
-export { app };
+export default app;

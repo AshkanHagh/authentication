@@ -1,30 +1,22 @@
-import jwt, { type JwtPayload } from 'jsonwebtoken';
-import { CatchAsyncError } from './catchAsyncError';
-import type { NextFunction, Request, Response } from 'express';
-import ErrorHandler from '../libs/utils/errorHandler';
-import { AccessTokenInvalidError, LoginRequiredError } from '../libs/utils';
-import type { TErrorHandler, TInferSelectUserNoPass } from '../types/index.type';
-import { getAllFromHashCache } from '../database/cache/index.cache';
+import type { Context, Next } from 'hono';
+import { CatchAsyncError } from '../libs/utils/catchAsyncError';
+import { createAccessTokenInvalidError, createLoginRequiredError } from '../libs/utils/customErrors';
+import { decodeToken, type DecodedToken } from '../libs/utils/jwt';
+import { hgetall } from '../database/queries';
+import type { UserModel } from '../types/index.type';
 
-export const isAuthenticated = CatchAsyncError(async (req : Request, res : Response, next : NextFunction) => {
-    try {
-        const authHeader : string | undefined = req.headers.authorization;
-        if(!authHeader || !authHeader.startsWith('Bearer ')) return next(new LoginRequiredError());
+export const isAuthenticated = CatchAsyncError(async (context : Context, next : Next) : Promise<void> => {
+    const authHeader : string | undefined = context.req.header('authorization');
+    if(!authHeader || authHeader.startsWith('Bearer ')) throw createLoginRequiredError();
 
-        const accessToken : string | undefined = authHeader.split(' ')[1];
-        if(!accessToken) return next(new AccessTokenInvalidError());
+    const accessToken : string | undefined = authHeader.split(' ')[1];
+    if(!accessToken) throw createAccessTokenInvalidError();
 
-        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN as string) as JwtPayload & TInferSelectUserNoPass;
-        if(!decoded) return next(new AccessTokenInvalidError());
+    const decodedToken : DecodedToken = decodeToken(accessToken, process.env.ACCESS_TOKEN);
+    if(!decodedToken) throw createAccessTokenInvalidError();
 
-        const user : TInferSelectUserNoPass = await getAllFromHashCache(`user:${decoded.id}`);
-        if(Object.keys(user).length <= 0) return next(new LoginRequiredError());
-
-        req.user = user;
-        next();
-        
-    } catch (err) {
-        const error = err as TErrorHandler;
-        return next(new ErrorHandler(`An error occurred : ${error.message}`, error.statusCode));
-    }
+    const user : Omit<UserModel, 'password'> = await hgetall(`user:${decodedToken.id}`);
+    if(!user) throw createLoginRequiredError();
+    context.set('user', user);
+    await next();
 });

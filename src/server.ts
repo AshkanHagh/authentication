@@ -1,5 +1,6 @@
-import { app } from './app';
+import app from './app';
 
-const PORT = process.env.PORT || 2338;
-
-app.listen(PORT, () => console.log(`Started server on ${PORT}`));
+Bun.serve({
+    port : process.env.PORT || 6150,
+    fetch : app.fetch
+})

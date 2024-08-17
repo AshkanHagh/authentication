@@ -1,46 +1,33 @@
 {
-  "name": "authentication",
+  "name": "hono-auth",
   "module": "src/server.ts",
   "type": "module",
-  "version": "2.0.0",
   "scripts": {
-    "dev": "bun --watch src/server.ts",
     "start": "bun src/server.ts",
-    "db:generate": "bunx drizzle-kit generate",
-    "db:migrate": "bun src/database/migrate.ts",
-    "db:studio": "bunx drizzle-kit studio",
-    "eslint": "bunx eslint .",
-    "vercel-build": "echo hello vercel"
+    "dev": "bun --watch src/server.ts",
+    "sentry:build": "bunx tsc",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org haghdoost --project auth-fullstack ./dist && sentry-cli sourcemaps upload --org haghdoost --project auth-fullstack ./dist"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/bun": "latest",
-    "@types/cookie-parser": "^1.4.7",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/joi": "^17.2.3",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/nodemailer": "^6.4.15",
-    "drizzle-kit": "^0.22.7",
-    "eslint": "9.x",
-    "globals": "^15.5.0",
-    "typescript-eslint": "^7.13.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0",
+    "typescript-eslint": "^8.0.1"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.2.2",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "@sentry/bun": "^8.26.0",
+    "@sentry/cli": "^2.33.1",
     "bcrypt": "^5.1.1",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "drizzle-orm": "^0.31.2",
-    "express": "^4.19.2",
-    "helmet": "^7.1.0",
+    "hono": "^4.5.5",
     "ioredis": "^5.4.1",
-    "joi": "^17.13.1",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^6.9.13",
-    "postgres": "^3.4.4",
+    "nodemailer": "^6.9.14",
+    "stripe": "^16.8.0",
     "zod": "^3.23.8"
   }
 }

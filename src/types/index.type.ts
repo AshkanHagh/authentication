@@ -1,27 +1,24 @@
-import type { InferSelectModel } from 'drizzle-orm';
-import type { UserTable } from '../database/schema';
+import { z } from 'zod';
 
-export type TErrorHandler = {
-    statusCode : number; message : string;
+export type UserModel = {
+    id : string; name : string; email : string; password : string; createdAt : Date; updatedAt : Date;
 }
 
-export type TInferSelectUser = InferSelectModel<typeof UserTable>
-export type TInferSelectUserNoPass = Omit<TInferSelectUser, 'password'>
+export const registerSchema = z.object({
+    email : z.string().email({message : 'Invalid email address'}),
+    password : z.string().min(6, {message : 'Password must be 6 or more characters long'})
+});
 
-export type TActivationToken = {
-    activationCode : string; activationToken : string;
-}
+export type RegisterSchema = z.infer<typeof registerSchema>;
 
-export type TCookieOptions = {
-    expires : Date; maxAge : number; httpOnly : boolean; sameSite : 'lax' | 'strict' | 'none' | undefined; secure? : boolean;
-}
+export type ActivationLink = string;
 
-declare global {
-    namespace Express {
-        interface Request {user? : TInferSelectUserNoPass;}
-    }
-}
+export const CookieOptionSchema = z.object({
+    expire : z.date(),
+    maxAge : z.number(),
+    httpOnly : z.boolean(),
+    sameSite : z.enum(['lax', 'strict', 'none']),
+    secure : z.boolean().optional().default(false)
+});
 
-export type TVerifyActivationToken = {
-    user : TInferSelectUser; activationCode : string;
-}
+export type CookieOption = z.infer<typeof CookieOptionSchema>;
