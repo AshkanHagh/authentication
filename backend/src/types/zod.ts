@@ -25,3 +25,11 @@ export const magicLinkSchema = z.object({
     condition : z.enum(['existingAccount', 'newAccount']).default('existingAccount'),
     code : z.string().trim().optional() 
 });
+
+export const socialAuthSchema = z.object({
+    name : z.string().min(1, {message : 'Name is required'}).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
+    image : z.string().url({message : 'Invalid image URL'}),
+    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, 'Invalid email format'),
+});
+
+export type SocialAuth = z.infer<typeof socialAuthSchema>;

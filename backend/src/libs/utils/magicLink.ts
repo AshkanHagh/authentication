@@ -6,7 +6,7 @@ export const generateActivationLink = (user : Partial<SelectUser>) : ActivationL
     return {activationToken, magicLink : `${process.env.API_BASEURL}/api/auth/verify?token=${activationToken}`};
 }
 
-export const verifyActivationToken = <T>(activationToken : string) :T => {
+export const verifyActivationToken = <T>(activationToken : string) : T => {
     return jwt.verify(activationToken, process.env.ACTIVATION_TOKEN) as T
 }
 

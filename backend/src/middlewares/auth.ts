@@ -5,7 +5,7 @@ import type { PublicUserInfo } from '../types';
 
 export const isAuthenticated = CatchAsyncError(async (context : Context, next : Next) : Promise<void> => {
     const authHeader : string | undefined = context.req.header('authorization');
-    if(!authHeader || authHeader.startsWith('Bearer ')) throw createLoginRequiredError();
+    if(!authHeader || !authHeader.startsWith('Bearer ')) throw createLoginRequiredError();
 
     const accessToken : string | undefined = authHeader.split(' ')[1];
     if(!accessToken) throw createAccessTokenInvalidError();

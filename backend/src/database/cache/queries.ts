@@ -17,3 +17,7 @@ export const incr = async (key : string) : Promise<number>=> {
 export const getIncr = async <T>(key : string) => {
     return await redis.get(key) as T;
 }
+
+export const del = async (key : string) => {
+    await redis.del(key);
+}

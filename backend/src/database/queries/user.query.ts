@@ -23,7 +23,9 @@ email : string, condition : C, detailCondition : P) : Promise<ConditionResult<C,
     return await handelCondition[condition](email, detailCondition);
 }
 
-export const insertUserDetail = async (email : string, pass : string, name : string) : Promise<PublicUserInfo> => {
-    const {password, ...rest} = (await db.insert(userTable).values({email, password : pass, name}).returning())[0];
+type insertDetail<C> = C extends 'social' ? Pick<SelectUser, 'email' | 'name' | 'image'> : Pick<SelectUser, 'email' | 'name' | 'password'>
+export const insertUserDetail = async <C extends 'emailPassword' | 'social'>(userDetail : insertDetail<C>) : Promise<PublicUserInfo> => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const {password, ...rest} = (await db.insert(userTable).values(userDetail).returning())[0];
     return rest;
 }

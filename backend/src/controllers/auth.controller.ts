@@ -1,10 +1,12 @@
 import type { Context } from 'hono';
 import { CatchAsyncError } from '../libs/utils/catchAsyncError';
-import type { RegisterSchema } from '../types/zod';
-import { loginService, registerService, verifyAccountService, type LoginResponse } from '../services/auth.service';
+import type { RegisterSchema, SocialAuth } from '../types/zod';
+import { loginService, registerService, socialAuthService, verifyAccountService } from '../services/auth.service';
 import type { PublicUserInfo, VerifyMagicLinkToken } from '../types/index.type';
 import { sendToken, type ConditionResponse } from '../libs/utils';
 import type { ConnInfo } from 'hono/conninfo';
+import { deleteCookie } from 'hono/cookie';
+import { del } from '../database/cache';
 
 export const register = CatchAsyncError(async (context: Context) => {
     const { email, password } = await context.req.validationData.json as RegisterSchema;
@@ -28,4 +30,21 @@ export const login = CatchAsyncError(async (context : Context) => {
     if(typeof userDetail === 'string') return context.json({success : true, activationToken : userDetail});
     const { accessToken, user } = await sendToken(userDetail, context, 'register');
     return context.json({success : true, userDetail : user, accessToken});
+});
+
+export const socialAuth = CatchAsyncError(async (context : Context) => {
+    const { name, image, email } = context.req.validationData.json as SocialAuth;
+    const userDetail : PublicUserInfo = await socialAuthService(name, email.toLowerCase(), image);
+
+    const { accessToken, user } = await sendToken(userDetail, context, 'register');
+    return context.json({success : true, userDetail : user, accessToken});
+});
+
+export const logout = CatchAsyncError(async (context : Context) => {
+    const { id, email } = context.get('user') as PublicUserInfo;
+    deleteCookie(context, 'access_token');
+    deleteCookie(context, 'refresh_token');
+
+    await Promise.all([del(`user:${id}`), del(`user:${email}`)]);
+    return context.json({success : true, message : 'User logged out successfully'});
 });

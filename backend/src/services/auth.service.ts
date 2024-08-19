@@ -1,4 +1,4 @@
-import { getIncr, hgetall, hset } from '../database/cache';
+import { getIncr } from '../database/cache';
 import { emailSearchWithCondition, insertUserDetail } from '../database/queries';
 import { emailEvent } from '../events/email.event';
 import ErrorHandler from '../libs/utils/errorHandler';
@@ -11,7 +11,7 @@ export const registerService = async (email : string, password : string) : Promi
     try {
         const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
         if(checkEmailExists) throw createEmailAlreadyExistsError();
-
+        
         const hashedPassword : string = await hashPassword(password);
         const registerBody : Pick<SelectUser, 'email' | 'password'> = {email : email.toLowerCase(), password : hashedPassword};
 
@@ -34,9 +34,8 @@ Promise<PublicUserInfo> => {
             const {email, password} : Pick<SelectUser, 'email' | 'password'> = verifyActivationToken(activationToken);
             const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
             if(checkEmailExists) throw createEmailAlreadyExistsError();
-    
-            const userDetail : PublicUserInfo = await insertUserDetail(email, password, email.split('@')[0]);
-            await Promise.all([hset(`user:${email}`, userDetail), hset(`user:${userDetail.id}`, userDetail)]);
+
+            const userDetail : PublicUserInfo = await insertUserDetail({name : email.split('@')[0], email, password});
             return userDetail;
         };
         const existingCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
@@ -44,7 +43,6 @@ Promise<PublicUserInfo> => {
             if(activationCode !== code) throw createInvalidVerifyCodeError();
 
             const userDetail : PublicUserInfo = await emailSearchWithCondition(user.email, 'full', 'modified');
-            await Promise.all([hset(`user:${userDetail.email}`, userDetail), hset(`user:${userDetail.id}`, userDetail)]);
             return userDetail;
         };
 
@@ -69,6 +67,7 @@ Promise<LoginResponse<R>> => {
 
         const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`);
         if(checkUserActivity) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const {password, ...rest} = checkEmailExists;
             return rest as LoginResponse<R>;
         }
@@ -81,4 +80,11 @@ Promise<LoginResponse<R>> => {
         const error = err as ErrorHandler;
         throw new ErrorHandler(`An error occurred : ${error.message}`, error.statusCode);
     }
+}
+
+export const socialAuthService = async (name : string, email : string, image : string) : Promise<PublicUserInfo> => {
+    const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
+    if(checkEmailExists) throw createEmailAlreadyExistsError();
+    const userDetail : PublicUserInfo = await insertUserDetail({name, email, image});
+    return userDetail;
 }

@@ -17,7 +17,7 @@ app.all('/', (context : Context) => context.json({success : true, message : 'Wel
 
 app.route('/api/auth', authRoute);
 
-app.notFound((context: Context) => {throw createRouteNotFoundError(`Route : ${context.req.url} not found`)});
+app.notFound((context : Context) => {throw createRouteNotFoundError(`Route : ${context.req.url} not found`)});
 app.onError(ErrorMiddleware);
 
 export default app;

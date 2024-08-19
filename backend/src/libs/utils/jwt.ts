@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
-import type { PublicUserInfo, SelectUser } from '../../types/index.type';
+import type { PublicUserInfo } from '../../types/index.type';
 import { cookieOptionSchema, type CookieOption } from '../../types/zod';
 import { createValidationError } from './customErrors';
 import { hset } from '../../database/cache';
