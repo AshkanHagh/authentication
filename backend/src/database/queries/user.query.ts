@@ -27,7 +27,3 @@ export const insertUserDetail = async (email : string, pass : string, name : str
     const {password, ...rest} = (await db.insert(userTable).values({email, password : pass, name}).returning())[0];
     return rest;
 }
-
-export const handleVerifyAccount = async (email : string, password : string, name : string) => {
-    
-};

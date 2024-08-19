@@ -11,9 +11,6 @@ declare module 'hono' {
     }
 }
 
-export type SubscriptionPeriodEnum = 'monthly' | 'yearly';
-export type PlanEnum = 'free' | 'premium';
-
 export type SelectUser = InferSelectModel<typeof userTable>;
 export type PublicUserInfo = Omit<SelectUser, 'password'>;
 
