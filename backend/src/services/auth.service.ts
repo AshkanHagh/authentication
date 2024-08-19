@@ -27,7 +27,7 @@ export const registerService = async (email : string, password : string) : Promi
 
 export type Condition = 'existingAccount' | 'newAccount';
 
-export const verifyMagicLinkService = async <C extends Condition>(activationToken : string, condition : C, activationCode? : string) : 
+export const verifyAccountService = async <C extends Condition>(activationToken : string, condition : C, activationCode? : string) : 
 Promise<PublicUserInfo> => {
     try {
         const newAccountCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
