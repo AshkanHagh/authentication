@@ -53,9 +53,7 @@ Promise<TokenCondition<T>> => {
         
         setCookie(context, 'access_token', accessToken, accessTokenOption());
         setCookie(context, 'refresh_token', refreshToken, refreshTokenOption());
-    
-        if(condition === 'refresh') return accessToken as TokenCondition<T>;
-        return {accessToken, user} as TokenCondition<T>;
+        return condition === 'refresh' ? accessToken as TokenCondition<T> : {accessToken, user} as TokenCondition<T>;
 
     } catch (err : unknown) {
         const error = err as ErrorHandler;

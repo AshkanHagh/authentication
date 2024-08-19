@@ -7,12 +7,12 @@ export default [
     {
         rules : {
             quotes: ['warn', 'single', { 'avoidEscape': true }],
-            'no-unused-vars': ['warn', {
-                'vars': 'all',
-                'args': 'after-used',
-                'ignoreRestSiblings': true,
-                'varsIgnorePattern': 'password'
-            }]
+            '@typescript-eslint/no-unused-vars': [
+                'warn',
+                {
+                    argsIgnorePattern: '^password$',  // Ignore 'next' if unused
+                },
+            ],
         }
     }
 ];
