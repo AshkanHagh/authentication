@@ -13,8 +13,8 @@ export const register = CatchAsyncError(async (context: Context) => {
 });
 
 export const verifyMagicLink = CatchAsyncError(async (context : Context) => {
-    const { token, c } = context.req.validationData.query as VerifyMagicLinkToken;
-    const userDetail : PublicUserInfo = await verifyMagicLinkService(token, c);
+    const { token, condition, code } = context.req.validationData.query as VerifyMagicLinkToken;
+    const userDetail : PublicUserInfo = await verifyMagicLinkService(token, condition, code);
 
     const { accessToken, user } = await sendToken(userDetail, context, 'register') as ConditionResponse;
     return context.json({success : true, userDetail : user, accessToken});

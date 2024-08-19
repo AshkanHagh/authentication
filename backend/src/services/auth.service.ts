@@ -11,7 +11,7 @@ export const registerService = async (email : string, password : string) : Promi
     try {
         const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
         if(checkEmailExists) throw createEmailAlreadyExistsError();
-        
+
         const hashedPassword : string = await hashPassword(password);
         const registerBody : Pick<SelectUser, 'email' | 'password'> = {email : email.toLowerCase(), password : hashedPassword};
 
@@ -68,7 +68,7 @@ Promise<LoginResponse<R>> => {
         if(!checkEmailExists || !passwordMatch) throw createEmailOrPasswordMatchError();
 
         const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`);
-        if(checkUserActivity.length > 0) {
+        if(checkUserActivity) {
             const {password, ...rest} = checkEmailExists;
             return rest as LoginResponse<R>;
         }

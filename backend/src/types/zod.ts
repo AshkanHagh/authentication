@@ -19,5 +19,6 @@ export type CookieOption = z.infer<typeof cookieOptionSchema>;
 
 export const magicLinkSchema = z.object({
     token : z.string().trim(),
-    c : z.enum(['existingAccount' , 'newAccount']).default('existingAccount')
+    condition : z.enum(['existingAccount' , 'newAccount']).default('existingAccount'),
+    code : z.string().optional()
 })

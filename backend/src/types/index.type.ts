@@ -25,7 +25,7 @@ export type ActivationCode = {
 };
 
 export type VerifyMagicLinkToken = {
-    token : string; c : Condition
+    token : string; condition : Condition; code? : string;
 }
 
 export type VerifyActivationCodeToken = {
