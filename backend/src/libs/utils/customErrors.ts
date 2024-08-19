@@ -32,6 +32,10 @@ export const createLoginRequiredError = (message : string = 'Please login to acc
     return new ErrorHandler(message, 401);
 };
 
+export const createEmailOrPasswordMatchError = (message : string = 'Email or password dose not match') => {
+    return new ErrorHandler(message, 400);
+}
+
 export const createAccessTokenInvalidError = (message : string = 'Access token is not valid') => {
     return new ErrorHandler(message, 401);
 };

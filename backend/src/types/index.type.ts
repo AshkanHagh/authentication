@@ -1,24 +1,33 @@
-import { z } from 'zod';
+import type { InferSelectModel } from 'drizzle-orm';
+import type { userTable } from '../database/schema';
+import type { Condition } from '../services/auth.service';
 
-export type UserModel = {
-    id : string; name : string; email : string; password : string; createdAt : Date; updatedAt : Date;
+export type ValidationSource = 'json' | 'param' | 'query';
+export type ValidationDataFuncs<T> = {json? : T; param? : T; query? : T};
+
+declare module 'hono' {
+    interface HonoRequest {
+        validationData : ValidationDataFuncs<unknown>
+    }
 }
 
-export const registerSchema = z.object({
-    email : z.string().email({message : 'Invalid email address'}),
-    password : z.string().min(6, {message : 'Password must be 6 or more characters long'})
-});
+export type SubscriptionPeriodEnum = 'monthly' | 'yearly';
+export type PlanEnum = 'free' | 'premium';
 
-export type RegisterSchema = z.infer<typeof registerSchema>;
+export type SelectUser = InferSelectModel<typeof userTable>;
+export type PublicUserInfo = Omit<SelectUser, 'password'>;
 
-export type ActivationLink = string;
+export type ActivationLink = {
+    activationToken : string; magicLink : string
+};
+export type ActivationCode = {
+    activationToken : string; activationCode : string
+};
 
-export const CookieOptionSchema = z.object({
-    expire : z.date(),
-    maxAge : z.number(),
-    httpOnly : z.boolean(),
-    sameSite : z.enum(['lax', 'strict', 'none']),
-    secure : z.boolean().optional().default(false)
-});
+export type VerifyMagicLinkToken = {
+    token : string; c : Condition
+}
 
-export type CookieOption = z.infer<typeof CookieOptionSchema>;
+export type VerifyActivationCodeToken = {
+    activationCode : string; user : Pick<SelectUser, 'email' | 'password'>;
+}

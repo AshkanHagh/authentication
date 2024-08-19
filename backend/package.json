@@ -1,32 +1,39 @@
 {
-  "name": "hono-auth",
+  "name": "genius-gate-backend",
   "module": "src/server.ts",
   "type": "module",
   "scripts": {
     "start": "bun src/server.ts",
     "dev": "bun --watch src/server.ts",
+    "db:generate": "bunx drizzle-kit generate",
+    "db:migrate": "bun src/database/migrate.ts",
+    "db:push": "bun drizzle-kit push",
+    "db:studio": "bunx drizzle-kit studio",
     "sentry:build": "bunx tsc",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org haghdoost --project auth-fullstack ./dist && sentry-cli sourcemaps upload --org haghdoost --project auth-fullstack ./dist"
   },
   "devDependencies": {
+    "@eslint/js": "^9.9.0",
     "@types/bcrypt": "^5.0.2",
     "@types/bun": "latest",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/nodemailer": "^6.4.15",
+    "drizzle-kit": "^0.24.0",
     "eslint": "^9.9.0",
     "globals": "^15.9.0",
-    "typescript-eslint": "^8.0.1"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.1.0"
   },
   "dependencies": {
-    "@hono/zod-validator": "^0.2.2",
-    "@paralleldrive/cuid2": "^2.2.2",
     "@sentry/bun": "^8.26.0",
     "@sentry/cli": "^2.33.1",
     "bcrypt": "^5.1.1",
-    "hono": "^4.5.5",
+    "drizzle-orm": "^0.33.0",
+    "hono": "^4.5.6",
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.9.14",
+    "postgres": "^3.4.4",
     "stripe": "^16.8.0",
     "zod": "^3.23.8"
   }

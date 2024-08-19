@@ -3,6 +3,7 @@ declare global {
     interface ProcessEnv {
       PORT: string;
       NODE_ENV: string;
+      DATABASE_URL : string;
       REDIS_URL: string;
       ACTIVATION_TOKEN: string;
       ACCESS_TOKEN: string;
