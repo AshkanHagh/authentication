@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { validationMiddleware } from '../middlewares/validation';
 import { magicLinkSchema, registerSchema, socialAuthSchema } from '../types/zod';
-import { login, logout, register, socialAuth, verifyAccount } from '../controllers/auth.controller';
+import { login, logout, refreshToken, register, socialAuth, verifyAccount } from '../controllers/auth.controller';
 import { checkIpInfo, handelIpRequest } from '../middlewares/ipChecker';
 import { some, every } from 'hono/combine';
 import { isAuthenticated } from '../middlewares/auth';
@@ -17,5 +17,7 @@ authRouter.post('/login', some(every(checkIpInfo, validationMiddleware('json', r
 authRouter.post('/social', some(every(handelIpRequest, validationMiddleware('json', socialAuthSchema))), socialAuth)
 
 authRouter.get('/logout', isAuthenticated, logout);
+
+authRouter.get('/refresh', handelIpRequest, refreshToken);
 
 export default authRouter;

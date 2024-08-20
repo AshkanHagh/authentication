@@ -1,9 +1,10 @@
-import { getIncr } from '../database/cache';
+import { getIncr, hgetall } from '../database/cache';
 import { emailSearchWithCondition, insertUserDetail } from '../database/queries';
 import { emailEvent } from '../events/email.event';
 import ErrorHandler from '../libs/utils/errorHandler';
 import { generateActivationLink, verifyActivationToken, comparePassword, hashPassword, 
-    createEmailAlreadyExistsError, createEmailOrPasswordMatchError, generateActivationCode, createInvalidVerifyCodeError
+    createEmailAlreadyExistsError, createEmailOrPasswordMatchError, generateActivationCode, createInvalidVerifyCodeError,
+    decodeToken, createLoginRequiredError
 } from '../libs/utils';
 import type { ActivationLink, PublicUserInfo, SelectUser, VerifyActivationCodeToken } from '../types';
 
@@ -83,8 +84,27 @@ Promise<LoginResponse<R>> => {
 }
 
 export const socialAuthService = async (name : string, email : string, image : string) : Promise<PublicUserInfo> => {
-    const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
-    if(checkEmailExists) throw createEmailAlreadyExistsError();
-    const userDetail : PublicUserInfo = await insertUserDetail({name, email, image});
-    return userDetail;
+    try {
+        const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
+        if(checkEmailExists) throw createEmailAlreadyExistsError();
+        const userDetail : PublicUserInfo = await insertUserDetail({name, email, image});
+        return userDetail;
+        
+    } catch (err : unknown) {
+        const error = err as ErrorHandler;
+        throw new ErrorHandler(`An error occurred : ${error.message}`, error.statusCode);
+    }
+}
+
+export const refreshTokenService = async (refreshToken : string) : Promise<PublicUserInfo> => {
+    try {
+        const decodedUser : PublicUserInfo = decodeToken(refreshToken, process.env.REFRESH_TOKEN);
+        const currentUserCache : PublicUserInfo = await hgetall(`user:${decodedUser.id}`);
+        if(!decodedUser || Object.keys(currentUserCache).length <= 0) throw createLoginRequiredError();
+        return currentUserCache
+        
+    } catch (err : unknown) {
+        const error = err as ErrorHandler;
+        throw new ErrorHandler(`An error occurred : ${error.message}`, error.statusCode);
+    }
 }

@@ -1,11 +1,11 @@
 import type { Context } from 'hono';
 import { CatchAsyncError } from '../libs/utils/catchAsyncError';
 import type { RegisterSchema, SocialAuth } from '../types/zod';
-import { loginService, registerService, socialAuthService, verifyAccountService } from '../services/auth.service';
+import { loginService, refreshTokenService, registerService, socialAuthService, verifyAccountService } from '../services/auth.service';
 import type { PublicUserInfo, VerifyMagicLinkToken } from '../types/index.type';
 import { sendToken, type ConditionResponse } from '../libs/utils';
 import type { ConnInfo } from 'hono/conninfo';
-import { deleteCookie } from 'hono/cookie';
+import { deleteCookie, getCookie } from 'hono/cookie';
 import { del } from '../database/cache';
 
 export const register = CatchAsyncError(async (context: Context) => {
@@ -47,4 +47,12 @@ export const logout = CatchAsyncError(async (context : Context) => {
 
     await Promise.all([del(`user:${id}`), del(`user:${email}`)]);
     return context.json({success : true, message : 'User logged out successfully'});
+});
+
+export const refreshToken = CatchAsyncError(async (context : Context) => {
+    const refresh_token : string | undefined = getCookie(context, 'refresh_token');
+    const currentUserDetail : PublicUserInfo = await refreshTokenService(refresh_token ?? '');
+
+    const accessToken : string = await sendToken(currentUserDetail, context, 'refresh');
+    return context.json({success : true, accessToken});
 });
