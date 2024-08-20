@@ -6,15 +6,15 @@ import { generateActivationLink, verifyActivationToken, comparePassword, hashPas
     createEmailAlreadyExistsError, createEmailOrPasswordMatchError, generateActivationCode, createInvalidVerifyCodeError,
     decodeToken, createLoginRequiredError
 } from '../libs/utils';
-import type { ActivationLink, PublicUserInfo, SelectUser, VerifyActivationCodeToken } from '../types';
+import type { ActivationLink, PublicUserInfo, RegisterSchema, SelectUser, VerifyActivationCodeToken } from '../types';
 
-export const registerService = async (email : string, password : string) : Promise<string> => {
+export const registerService = async (email : string, password : string, name : string) : Promise<string> => {
     try {
         const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
         if(checkEmailExists) throw createEmailAlreadyExistsError();
         
         const hashedPassword : string = await hashPassword(password);
-        const registerBody : Pick<SelectUser, 'email' | 'password'> = {email : email.toLowerCase(), password : hashedPassword};
+        const registerBody : RegisterSchema = {email : email.toLowerCase(), password : hashedPassword, name};
 
         const { activationToken, magicLink } : ActivationLink = generateActivationLink(registerBody);
         emailEvent.emit('send-magic-link', email, magicLink);
@@ -32,11 +32,11 @@ export const verifyAccountService = async <C extends Condition>(activationToken 
 Promise<PublicUserInfo> => {
     try {
         const newAccountCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
-            const {email, password} : Pick<SelectUser, 'email' | 'password'> = verifyActivationToken(activationToken);
+            const {email, password, name} : RegisterSchema = verifyActivationToken(activationToken);
             const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
             if(checkEmailExists) throw createEmailAlreadyExistsError();
 
-            const userDetail : PublicUserInfo = await insertUserDetail({name : email.split('@')[0], email, password});
+            const userDetail : PublicUserInfo = await insertUserDetail({name, email, password});
             return userDetail;
         };
         const existingCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
@@ -56,6 +56,11 @@ Promise<PublicUserInfo> => {
         const error = err as ErrorHandler
         throw new ErrorHandler(`An error occurred : ${error.message}`, error.statusCode);
     }
+}
+
+export const emailCheckService = async (email : string) : Promise<PublicUserInfo | string> => {
+    const userDetail : PublicUserInfo = await emailSearchWithCondition(email, 'full', 'full');
+    return userDetail ? userDetail : 'Account dose not exists';
 }
 
 export type LoginResponse<R> = R extends PublicUserInfo ? PublicUserInfo : string;

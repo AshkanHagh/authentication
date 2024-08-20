@@ -1,6 +1,5 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import type { userTable } from '../database/schema';
-import type { Condition } from '../services/auth.service';
 
 export type ValidationSource = 'json' | 'param' | 'query';
 export type ValidationDataFuncs<T> = {json? : T; param? : T; query? : T};
@@ -20,10 +19,6 @@ export type ActivationLink = {
 export type ActivationCode = {
     activationToken : string; activationCode : string
 };
-
-export type VerifyMagicLinkToken = {
-    token : string; condition : Condition; code? : string;
-}
 
 export type VerifyActivationCodeToken = {
     activationCode : string; user : Pick<SelectUser, 'email' | 'password'>;

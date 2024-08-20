@@ -26,6 +26,6 @@
     // This improves issue grouping in Sentry.
     "sourceRoot": "/"
   },
-  "include": ["src/**/*"],
+  "include": ["/*.ts", "/*.js", "src/**/*"],
   "exclude": ["node_modules"]
 }

@@ -1,29 +1,37 @@
 import type { Context } from 'hono';
-import { CatchAsyncError } from '../libs/utils/catchAsyncError';
-import type { RegisterSchema, SocialAuth } from '../types/zod';
-import { loginService, refreshTokenService, registerService, socialAuthService, verifyAccountService } from '../services/auth.service';
-import type { PublicUserInfo, VerifyMagicLinkToken } from '../types/index.type';
-import { sendToken, type ConditionResponse } from '../libs/utils';
+import { emailCheckService, loginService, refreshTokenService, registerService, socialAuthService, 
+    verifyAccountService } from '../services/auth.service';
+import type { PublicUserInfo, VerifyAccountSchema, LoginSchema, RegisterSchema, SocialAuth, EmailCheckSchema } from '../types';
+import { sendToken, type ConditionResponse, CatchAsyncError } from '../libs/utils';
 import type { ConnInfo } from 'hono/conninfo';
 import { deleteCookie, getCookie } from 'hono/cookie';
 import { del } from '../database/cache';
 
 export const register = CatchAsyncError(async (context: Context) => {
-    const { email, password } = await context.req.validationData.json as RegisterSchema;
-    const activationToken : string = await registerService(email, password);
+    const { email, password, name } = await context.req.validationData.json as RegisterSchema;
+    const activationToken : string = await registerService(email, password, name);
     return context.json({success : true, activationToken}, 200);
 });
 
 export const verifyAccount = CatchAsyncError(async (context : Context) => {
-    const { token, condition, code } = context.req.validationData.query as VerifyMagicLinkToken;
+    const { token, condition, code } = context.req.validationData.query as VerifyAccountSchema;
     const userDetail : PublicUserInfo = await verifyAccountService(token, condition, code);
 
     const { accessToken, user } = await sendToken(userDetail, context, 'register') as ConditionResponse;
     return context.json({success : true, userDetail : user, accessToken});
 });
 
+export const emailCheck = CatchAsyncError(async (context : Context) => {
+    const { email } = context.req.validationData.query as EmailCheckSchema;
+    const emailCheck : string | PublicUserInfo = await emailCheckService(email);
+    if (typeof emailCheck === 'string') return context.json({success : false, message : emailCheck});
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { name, ...rest } = emailCheck;
+    return context.json({success : true, name});
+});
+
 export const login = CatchAsyncError(async (context : Context) => {
-    const { email, password : reqPassword } = context.req.validationData.json as RegisterSchema;
+    const { email, password : reqPassword } = context.req.validationData.json as LoginSchema;
     const connectionInfo : ConnInfo = context.get('current_user_ip');
     const userDetail = await loginService(email, reqPassword, connectionInfo.remote.address);
 
