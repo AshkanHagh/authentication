@@ -90,8 +90,8 @@ Promise<LoginResponse<R>> => {
 
 export const socialAuthService = async (name : string, email : string, image : string) : Promise<PublicUserInfo> => {
     try {
-        const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
-        if(checkEmailExists) throw createEmailAlreadyExistsError();
+        const checkEmailExists : PublicUserInfo = await emailSearchWithCondition(email, 'full', 'modified');
+        if(checkEmailExists) return checkEmailExists
         const userDetail : PublicUserInfo = await insertUserDetail({name, email, image});
         return userDetail;
         
