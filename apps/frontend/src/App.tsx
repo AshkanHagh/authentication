@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom"
-import Auth from "./features/auth/pages/Auth"
+import Auth from "./pages/Auth"
 
 function App() {
   return (
