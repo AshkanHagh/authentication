@@ -1,9 +1,9 @@
 import type { Context, Next } from 'hono';
-import { decodeToken, type DecodedToken, createAccessTokenInvalidError, createLoginRequiredError, CatchAsyncError } from '../libs/utils';
+import { decodeToken, type DecodedToken, createAccessTokenInvalidError, createLoginRequiredError } from '../libs/utils';
 import { hgetall } from '../database/cache';
 import type { PublicUserInfo } from '../types';
 
-export const isAuthenticated = CatchAsyncError(async (context : Context, next : Next) : Promise<void> => {
+export const isAuthenticated = async (context : Context, next : Next) : Promise<void> => {
     const authHeader : string | undefined = context.req.header('authorization');
     if(!authHeader || !authHeader.startsWith('Bearer ')) throw createLoginRequiredError();
 
@@ -17,4 +17,4 @@ export const isAuthenticated = CatchAsyncError(async (context : Context, next : 
     if(!user) throw createLoginRequiredError();
     context.set('user', user);
     await next();
-});
+};

@@ -36,7 +36,7 @@ export type CookieOption = z.infer<typeof cookieOptionSchema>;
 export const verifyMagicLinkToken = z.object({
     token : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, {message : 'Invalid jwt token format'}),
     condition : z.enum(['existingAccount', 'newAccount']).default('newAccount'),
-    code : z.string().trim().regex(/^\d{4}$/).optional()
+    code : z.string({message : 'Invalid code signature'}).min(4).trim().regex(/^\d{4}$/).optional()
 });
 export type VerifyAccountSchema = z.infer<typeof verifyMagicLinkToken>;
 
@@ -47,3 +47,12 @@ export const socialAuthSchema = z.object({
 });
 
 export type SocialAuth = z.infer<typeof socialAuthSchema>;
+
+export const updateProfileSchema = z.object({
+    firstName : z.string().min(1).regex(/^[a-zA-Z\s]+$/, {message : 'FirstName can only contain letters and spaces'}).optional(),
+    lastName : z.string().min(1).regex(/^[a-zA-Z\s]+$/, {message : 'LastName can only contain letters and spaces'}).optional(),
+    image : z.instanceof(File).optional()
+}).refine(data => data.firstName || data.lastName || data.image, {
+    message : 'At least one field (firstName, lastName, or image) must be provided'
+});
+export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>;

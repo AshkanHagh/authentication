@@ -1,8 +1,10 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import type { userTable } from '../database/schema';
 
-export type ValidationSource = 'json' | 'param' | 'query';
-export type ValidationDataFuncs<T> = {json? : T; param? : T; query? : T};
+export type ValidationSource = 'json' | 'param' | 'query' | 'parseBody';
+export type ValidationDataFuncs<T> = {
+    [K in ValidationSource]? : T
+}
 
 declare module 'hono' {
     interface HonoRequest {

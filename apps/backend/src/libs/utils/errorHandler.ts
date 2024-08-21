@@ -13,7 +13,7 @@ class ErrorHandler extends Error {
 
 export const ErrorMiddleware = async (error : unknown, context : Context) => {
     const handledError : ErrorHandler = error instanceof ErrorHandler ? error : new ErrorHandler('Internal Server Error', 500);
-    Sentry.captureException(handledError.message);
+    // Sentry.captureException(handledError.message);
     return context.json({success : false, message : handledError.message}, handledError.statusCode);
 };
 

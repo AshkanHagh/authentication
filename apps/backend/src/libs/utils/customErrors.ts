@@ -12,6 +12,10 @@ export const createBadRequestError = (message : string = 'Bad request') => {
     return new ErrorHandler(message, 400);
 };
 
+export const createTimeoutError = (message : string = 'Request timeout after waiting 3.5 seconds. Please try again later') => {
+    return new ErrorHandler(message, 408);
+};
+
 export const createForbiddenError = (message : string = 'Forbidden') => {
     return new ErrorHandler(message, 403);
 };

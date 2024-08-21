@@ -8,11 +8,10 @@ export const validationMiddleware = <S>(source : ValidationSource, schema : ZodS
         // @ts-expect-error // type bug
         const data = await context.req[source]();
         const handelValidation : Record<ValidationSource, (data : S, schema : ZodSchema<S>) => Promise<z.SafeParseReturnType<unknown, unknown>>> = {
-            json : validate, query : validate, param : validate
+            json : validate, query : validate, param : validate, parseBody : validate
         };
 
         const validationResult = await handelValidation[source](data, schema);
-        console.log(validationResult.error?.issues[0]);
         if (!validationResult.success) throw createValidationError(validationResult.error?.issues[0].message);
         context.req.validationData = {
             [source] : validationResult.data as z.infer<typeof schema>
