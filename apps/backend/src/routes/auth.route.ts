@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { validationMiddleware } from '../middlewares/validation';
-import { loginSchema, verifyMagicLinkToken, registerSchema, socialAuthSchema, emailCheckSchema } from '../types/zod';
+import { loginSchema, verifyMagicLinkToken, registerSchema, socialAuthSchema, emailCheckSchema } from '../types';
 import { emailCheck, login, logout, refreshToken, register, socialAuth, verifyAccount } from '../controllers/auth.controller';
 import { checkIpInfo, handelIpRequest } from '../middlewares/ipChecker';
 import { some, every } from 'hono/combine';

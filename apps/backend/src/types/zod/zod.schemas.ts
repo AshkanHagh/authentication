@@ -56,3 +56,20 @@ export const updateProfileSchema = z.object({
     message : 'At least one field (firstName, lastName, or image) must be provided'
 });
 export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>;
+
+export const addQuestionSchema = z.object({
+    question : z.string().min(1, {message : 'Question must be at least 1 character long'}),
+    image : z.instanceof(File).optional(),
+    options : z.optional(z.object({
+        option1 : z.string().min(1, {message : 'Option 1 must be at least 1 character long'}).optional(),
+        option2 : z.string().min(1, {message : 'Option 2 must be at least 1 character long'}).optional(),
+        option3 : z.string().min(1, {message : 'Option 3 must be at least 1 character long'}).optional(),
+        option4 : z.string().min(1, {message : 'Option 4 must be at least 1 character long'}).optional(),
+        correctAnswer : z.string().refine(value => ['option1', 'option2', 'option3', 'option4'].includes(value), 
+        { message: 'Invalid correct answer' })
+    })).refine(data => data?.option1 || data?.option2 || data?.option3 || data?.option4, {
+        message : 'At least one field (option) must be provided'
+    }),
+    answer : z.string().min(1, {message : 'Answer must be at least 1 character long'})
+});
+export type AddQuestionSchema = z.infer<typeof addQuestionSchema>;
