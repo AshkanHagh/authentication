@@ -4,7 +4,7 @@ import { loginSchema, verifyMagicLinkToken, registerSchema, socialAuthSchema, em
 import { emailCheck, login, logout, refreshToken, register, socialAuth, verifyAccount } from '../controllers/auth.controller';
 import { checkIpInfo, handelIpRequest } from '../middlewares/ipChecker';
 import { some, every } from 'hono/combine';
-import { isAuthenticated } from '../middlewares/auth';
+import { isAuthenticated } from '../middlewares/authorization';
 
 const authRouter = new Hono()
 

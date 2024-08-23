@@ -3,7 +3,7 @@ import type { PublicUserInfo, SelectUser } from '../../types';
 import { db } from '../index.db';
 import { userTable } from '../../models/schema';
 
-type Condition = 'full' | 'modified';
+type EmailSearchCondition = 'full' | 'modified';
 type DetailCondition<C, P> = P extends 'modified' ? C extends 'modified' ? Pick<SelectUser, 'email'> : PublicUserInfo : SelectUser;
 type ConditionResult<C, P> = C extends 'modified' ? Pick<SelectUser, 'email'> : DetailCondition<C, P>;
 
@@ -17,7 +17,7 @@ email : string, condition : C, detailCondition : P) : Promise<ConditionResult<C,
         return await db.query.userTable.findFirst({where : (table, {eq}) => eq(table.email, email), columns}) as ConditionResult<C, P>
     }
 
-    const handelCondition : Record<Condition, (email : string, condition? : P) => Promise<ConditionResult<C, P>>> = {
+    const handelCondition : Record<EmailSearchCondition, (email : string, condition? : P) => Promise<ConditionResult<C, P>>> = {
         full : selectUserDetail, modified : selectEmailOnly
     }
     return await handelCondition[condition](email, detailCondition);
@@ -25,7 +25,6 @@ email : string, condition : C, detailCondition : P) : Promise<ConditionResult<C,
 
 type insertDetail<C> = C extends 'social' ? Pick<SelectUser, 'email' | 'name' | 'image'> : Pick<SelectUser, 'email' | 'name' | 'password'>
 export const insertUserDetail = async <C extends 'emailPassword' | 'social'>(userDetail : insertDetail<C>) : Promise<PublicUserInfo> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {password, ...rest} = (await db.insert(userTable).values(userDetail).returning())[0];
     return rest;
 }

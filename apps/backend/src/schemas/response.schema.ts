@@ -23,13 +23,13 @@ export const emailCheckResponseSchema = z.object({
     message : z.string().optional(),
     name : z.string().optional()
 });
-export type EmailCheckSchema = z.infer<typeof emailCheckResponseSchema>;
+export type EmailCheckResponseSchema = z.infer<typeof emailCheckResponseSchema>;
 type EnforcePresence<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
-export type EmailCheckResponseError = EnforcePresence<EmailCheckSchema, 'message'> & {success : false};
-export type EmailCheckResponseTrue = EnforcePresence<EmailCheckSchema, 'name'> & {success : true};
+export type EmailCheckResponseError = EnforcePresence<EmailCheckResponseSchema, 'message'> & {success : false};
+export type EmailCheckResponseSuccess = EnforcePresence<EmailCheckResponseSchema, 'name'> & {success : true};
 
-export type EmailCheckResponse = (EmailCheckResponseError | EmailCheckResponseTrue);
+export type EmailCheckResponse = (EmailCheckResponseError | EmailCheckResponseSuccess);
 
 export const loginResponseSchema = z.object({
     success : z.boolean(),

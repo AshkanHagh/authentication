@@ -49,7 +49,7 @@ Promise<TokenCondition<T>> => {
     try {
         const accessToken : string = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn : `${accessTokenExpires}m`});
         const refreshToken : string = jwt.sign(user, process.env.REFRESH_TOKEN, {expiresIn : `${refreshTokenExpires}d`});
-        await Promise.all([hset(`user:${user.id}`, user), hset(`user:${user.email}`, user)]);
+        await Promise.all([hset(`user:${user.id}`, user, 604800), hset(`user:${user.email}`, user, 604800)]);
         
         setCookie(context, 'access_token', accessToken, accessTokenOption());
         setCookie(context, 'refresh_token', refreshToken, refreshTokenOption());

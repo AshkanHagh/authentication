@@ -1,6 +1,7 @@
+import type { BunFile } from 'bun';
 import { v2 as cloudinary, UploadStream, type UploadApiErrorResponse, type UploadApiResponse } from 'cloudinary';
 
-export const uploadImage = async (image : File, oldImage? : string) : Promise<string> => {
+export const uploadImage = async (image : BunFile, oldImage? : string) : Promise<string> => {
     const arrayBuffer : ArrayBuffer = await image.arrayBuffer();
     const buffer : Buffer = Buffer.from(arrayBuffer);
 
@@ -13,4 +14,12 @@ export const uploadImage = async (image : File, oldImage? : string) : Promise<st
         )
         uploadStream.end(buffer);
     });
+}
+
+export const uploadImageUrl = async (image : string, oldImage? : string) : Promise<string> => {
+    const uploadResponse : UploadApiResponse = await cloudinary.uploader.upload(image, {
+        folder : 'genius-gate',
+    });
+    if(oldImage) await cloudinary.uploader.destroy(oldImage.split('/').pop()!.split('.')[0], {resource_type : 'image'});
+    return uploadResponse.secure_url;
 }

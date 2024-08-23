@@ -11,11 +11,9 @@ import type { RegisterSchema } from '../schemas/zod.schemas';
 
 export const registerService = async (email : string, password : string, name : string) : Promise<string> => {
     try {
-        const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
-        if(checkEmailExists) throw createEmailAlreadyExistsError();
-        
-        const hashedPassword : string = await hashPassword(password);
-        const registerBody : RegisterSchema = {email : email.toLowerCase(), password : hashedPassword, name};
+        const isEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
+        if(isEmailExists) throw createEmailAlreadyExistsError();
+        const registerBody : RegisterSchema = {email : email.toLowerCase(), password : await hashPassword(password), name};
 
         const { activationToken, magicLink } : ActivationLink = generateActivationLink(registerBody);
         emailEvent.emit('send-magic-link', email, magicLink);
@@ -27,28 +25,24 @@ export const registerService = async (email : string, password : string, name : 
     }
 };
 
-export type Condition = 'existingAccount' | 'newAccount';
-
-export const verifyAccountService = async <C extends Condition>(activationToken : string, condition : C, activationCode? : string) : 
-Promise<PublicUserInfo> => {
+export type VerifyAccountCondition = 'existingAccount' | 'newAccount';
+export const verifyAccountService = async <C extends VerifyAccountCondition>(activationToken : string, condition : C, 
+    verifyCode? : string) : Promise<PublicUserInfo> => {
     try {
         const newAccountCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
             const {email, password, name} : RegisterSchema = verifyActivationToken(activationToken);
             const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
             if(checkEmailExists) throw createEmailAlreadyExistsError();
 
-            const userDetail : PublicUserInfo = await insertUserDetail({name, email, password});
-            return userDetail;
+            return await insertUserDetail({name, email, password});
         };
         const existingCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
-            const { activationCode : code, user } = verifyActivationToken(activationToken) as VerifyActivationCodeToken;
-            if(activationCode !== code) throw createInvalidVerifyCodeError();
-
-            const userDetail : PublicUserInfo = await emailSearchWithCondition(user.email, 'full', 'modified');
-            return userDetail;
+            const { activationCode, user } = verifyActivationToken(activationToken) as VerifyActivationCodeToken;
+            if(verifyCode !== activationCode) throw createInvalidVerifyCodeError();
+            return await emailSearchWithCondition(user.email, 'full', 'modified');
         };
 
-        const handelCondition : Record<Condition, (activationCode : string) => Promise<PublicUserInfo>> = {
+        const handelCondition : Record<VerifyAccountCondition, (activationCode : string) => Promise<PublicUserInfo>> = {
             existingAccount : existingCondition, newAccount : newAccountCondition
         }
         return await handelCondition[condition](activationToken);
@@ -59,28 +53,26 @@ Promise<PublicUserInfo> => {
     }
 }
 
-export const emailCheckService = async (email : string) : Promise<PublicUserInfo | string> => {
-    const userDetail : PublicUserInfo = await emailSearchWithCondition(email, 'full', 'full');
-    return userDetail ? userDetail : 'Account dose not exists';
+export const emailCheckService = async (email : string) : Promise<PublicUserInfo | undefined> => {
+    const userCacheDetail : PublicUserInfo | undefined = await hgetall(`user:${email}`, 604800);
+    return userCacheDetail && Object.keys(userCacheDetail).length ? userCacheDetail : await emailSearchWithCondition(email, 'full', 'modified')
 }
 
-export type LoginResponse<R> = R extends PublicUserInfo ? PublicUserInfo : string;
+export type LoginServiceResponseDetail<R> = R extends PublicUserInfo ? PublicUserInfo : string;
 export const loginService = async <R extends PublicUserInfo | string>(email : string, pass : string, ipAddress : string | undefined) : 
-Promise<LoginResponse<R>> => {
+Promise<LoginServiceResponseDetail<R>> => {
     try {
-        const checkEmailExists : SelectUser = await emailSearchWithCondition(email, 'full', 'full');
-        const passwordMatch : boolean = await comparePassword(pass, checkEmailExists?.password || '');
-        if(!checkEmailExists || !passwordMatch) throw createEmailOrPasswordMatchError();
+        const isEmailExists : SelectUser = await emailSearchWithCondition(email, 'full', 'full');
+        const passwordMatch : boolean = await comparePassword(pass, isEmailExists?.password || '');
+        if(!isEmailExists || !passwordMatch) throw createEmailOrPasswordMatchError();
 
-        const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`);
-        if(checkUserActivity) {
-            const {password, ...rest} = checkEmailExists;
-            return rest as LoginResponse<R>;
-        }
+        const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`, 604800);
+        const {password, ...rest} = isEmailExists;
+        if(checkUserActivity) return rest as LoginServiceResponseDetail<R>;
         
         const { activationCode, activationToken } = generateActivationCode({email, password : pass});
         emailEvent.emit('send-activation-code', email, activationCode);
-        return activationToken as LoginResponse<R>;
+        return activationToken as LoginServiceResponseDetail<R>;
         
     } catch (err : unknown) {
         const error = err as ErrorHandler;
@@ -90,10 +82,10 @@ Promise<LoginResponse<R>> => {
 
 export const socialAuthService = async (name : string, email : string, image : string) : Promise<PublicUserInfo> => {
     try {
-        const checkEmailExists : PublicUserInfo = await emailSearchWithCondition(email, 'full', 'modified');
-        if(checkEmailExists) return checkEmailExists
-        const userDetail : PublicUserInfo = await insertUserDetail({name, email, image});
-        return userDetail;
+        const userCacheDetail : PublicUserInfo = await hgetall<PublicUserInfo>(`user:${email}`, 604800);
+        const desiredUser : PublicUserInfo = userCacheDetail && Object.keys(userCacheDetail).length ? userCacheDetail 
+        : await emailSearchWithCondition(email, 'full', 'modified')
+        return desiredUser ? desiredUser : await insertUserDetail({name, email, image});
         
     } catch (err : unknown) {
         const error = err as ErrorHandler;
@@ -104,7 +96,7 @@ export const socialAuthService = async (name : string, email : string, image : s
 export const refreshTokenService = async (refreshToken : string) : Promise<PublicUserInfo> => {
     try {
         const decodedUser : PublicUserInfo = decodeToken(refreshToken, process.env.REFRESH_TOKEN);
-        const currentUserCache : PublicUserInfo = await hgetall(`user:${decodedUser.id}`);
+        const currentUserCache : PublicUserInfo = await hgetall(`user:${decodedUser.id}`, 604800);
         if(!decodedUser || Object.keys(currentUserCache).length <= 0) throw createLoginRequiredError();
         return currentUserCache
         
