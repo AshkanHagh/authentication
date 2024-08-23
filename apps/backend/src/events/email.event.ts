@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { sendEmail } from '../libs/utils/sendMail';
+import { sendEmail } from '../utils';
 
 export const emailEvent = new EventEmitter();
 

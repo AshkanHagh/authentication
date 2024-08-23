@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectUserPublicInfoSchema } from '../../database/schema';
+import { selectUserPublicInfoSchema } from '../models/schema';
 
 export const registerResponseSchema = z.object({
     success : z.boolean(),

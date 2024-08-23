@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import type { ActivationCode, ActivationLink, SelectUser } from '../../types/index.type';
+import type { ActivationCode, ActivationLink, SelectUser } from '../../types';
 
 export const generateActivationLink = (user : Partial<SelectUser>) : ActivationLink => {
     const activationToken : string = jwt.sign(user, process.env.ACTIVATION_TOKEN, {expiresIn : '5m'});

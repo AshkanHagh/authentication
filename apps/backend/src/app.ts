@@ -7,9 +7,9 @@ import { timeout } from 'hono/timeout';
 
 import authRoute from './routes/auth.route';
 import dashboardRoute from './routes/dashboard.route';
+import questionRoute from './routes/questions.route';
 
-import { ErrorMiddleware } from './libs/utils/errorHandler';
-import { createRouteNotFoundError, createTimeoutError } from './libs/utils/customErrors';
+import { ErrorMiddleware, createRouteNotFoundError, createTimeoutError } from './utils';
 
 const app = new Hono();
 
@@ -22,6 +22,7 @@ app.all('/', (context : Context) => context.json({success : true, message : 'Wel
 
 app.route('/api/auth', authRoute);
 app.route('/api/dashboard', dashboardRoute);
+app.route('/api/questions', questionRoute);
 
 app.notFound((context : Context) => {throw createRouteNotFoundError(`Route : ${context.req.url} not found`)});
 app.onError(ErrorMiddleware);

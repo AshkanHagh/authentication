@@ -4,7 +4,7 @@ import { isAuthenticated } from '../middlewares/auth';
 import { some, every } from 'hono/combine';
 import { handelIpRequest } from '../middlewares/ipChecker';
 import { validationMiddleware } from '../middlewares/validation';
-import { updateProfileSchema } from '../types';
+import { updateProfileSchema } from '../schemas';
 
 const dashboardRouter = new Hono();
 

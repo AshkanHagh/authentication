@@ -62,14 +62,16 @@ const questionOptionSchema = z.object({
     option2 : z.string().min(1, {message : 'Option 2 must be at least 1 character long'}).optional(),
     option3 : z.string().min(1, {message : 'Option 3 must be at least 1 character long'}).optional(),
     option4 : z.string().min(1, {message : 'Option 4 must be at least 1 character long'}).optional(),
-    correctAnswer : z.string().refine(value => ['option1', 'option2', 'option3', 'option4'].includes(value), 
-    { message: 'Invalid correct answer' })
-}).optional();
+    correctAnswer : z.string()
+}).refine(data => {
+    const option = [data.option1, data.option2, data.option3, data.option4].filter(Boolean);
+    return option.includes(data.correctAnswer);
+}, {message: 'correctAnswer must be one of the provided options'}).optional();
 export type QuestionOptions = z.infer<typeof questionOptionSchema>;
 
 export const addQuestionSchema = z.object({
     question : z.string().min(1, {message : 'Question must be at least 1 character long'}),
-    image : z.instanceof(File).optional(),
+    image : z.string().url().optional(),
     options : questionOptionSchema.refine(data => data?.option1 || data?.option2 || data?.option3 || data?.option4, {
         message : 'At least one field (option) must be provided'
     }),

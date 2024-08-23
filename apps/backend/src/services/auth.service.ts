@@ -1,12 +1,13 @@
 import { getIncr, hgetall } from '../database/cache';
 import { emailSearchWithCondition, insertUserDetail } from '../database/queries';
 import { emailEvent } from '../events/email.event';
-import ErrorHandler from '../libs/utils/errorHandler';
+import ErrorHandler from '../utils/errorHandler';
 import { generateActivationLink, verifyActivationToken, comparePassword, hashPassword, 
     createEmailAlreadyExistsError, createEmailOrPasswordMatchError, generateActivationCode, createInvalidVerifyCodeError,
     decodeToken, createLoginRequiredError
-} from '../libs/utils';
-import type { ActivationLink, PublicUserInfo, RegisterSchema, SelectUser, VerifyActivationCodeToken } from '../types';
+} from '../utils';
+import type { ActivationLink, PublicUserInfo, SelectUser, VerifyActivationCodeToken } from '../types';
+import type { RegisterSchema } from '../schemas/zod.schemas';
 
 export const registerService = async (email : string, password : string, name : string) : Promise<string> => {
     try {
@@ -73,7 +74,6 @@ Promise<LoginResponse<R>> => {
 
         const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`);
         if(checkUserActivity) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const {password, ...rest} = checkEmailExists;
             return rest as LoginResponse<R>;
         }

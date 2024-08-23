@@ -1,5 +1,5 @@
 import type { Context, Next } from 'hono';
-import { decodeToken, type DecodedToken, createAccessTokenInvalidError, createLoginRequiredError } from '../libs/utils';
+import { decodeToken, type DecodedToken, createAccessTokenInvalidError, createLoginRequiredError } from '../utils';
 import { hgetall } from '../database/cache';
 import type { PublicUserInfo } from '../types';
 

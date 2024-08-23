@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
-import { CatchAsyncError } from '../libs/utils';
-import type { PublicUserInfo, UpdateProfileSchema } from '../types';
+import { CatchAsyncError } from '../utils';
+import type { PublicUserInfo } from '../types';
+import type { UpdateProfileSchema } from '../schemas';
 import { updateProfileService } from '../services/dashboard.service';
 import type { ProfileDetail } from '../database/queries';
 

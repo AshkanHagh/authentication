@@ -5,3 +5,4 @@ export * from './hash';
 export * from './jwt';
 export * from './magicLink';
 export * from './sendMail';
+export * from './uploadImage';

@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
-import type { PublicUserInfo, SelectUser } from '../../types/index.type';
+import type { PublicUserInfo, SelectUser } from '../../types';
 import { db } from '../index.db';
-import { userTable } from '../schema';
+import { userTable } from '../../models/schema';
 
 type Condition = 'full' | 'modified';
 type DetailCondition<C, P> = P extends 'modified' ? C extends 'modified' ? Pick<SelectUser, 'email'> : PublicUserInfo : SelectUser;

@@ -1,9 +1,9 @@
 import type { Context } from 'hono';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
-import type { PublicUserInfo } from '../../types/index.type';
-import { cookieOptionSchema, type CookieOption } from '../../types';
+import { type PublicUserInfo } from '../types';
+import { cookieOptionSchema, type CookieOption } from '../schemas';
 import { createValidationError } from './customErrors';
-import { hset } from '../../database/cache';
+import { hset } from '../database/cache';
 import { setCookie } from 'hono/cookie';
 import ErrorHandler from './errorHandler';
 
