@@ -26,10 +26,15 @@ export const emailCheckResponseSchema = z.object({
 export type EmailCheckResponseSchema = z.infer<typeof emailCheckResponseSchema>;
 type EnforcePresence<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
-export type EmailCheckResponseError = EnforcePresence<EmailCheckResponseSchema, 'message'> & {success : false};
-export type EmailCheckResponseSuccess = EnforcePresence<EmailCheckResponseSchema, 'name'> & {success : true};
+type ConditionalEmailCheckResponse<S extends boolean> = S extends true
+    ? Omit<EnforcePresence<EmailCheckResponseSchema, 'name'>, 'message'> & { success: true }
+    : Omit<EnforcePresence<EmailCheckResponseSchema, 'message'>, 'name'> & { success: false };
 
-export type EmailCheckResponse = (EmailCheckResponseError | EmailCheckResponseSuccess);
+export type EmailCheckResponseError = ConditionalEmailCheckResponse<false>;
+export type EmailCheckResponseSuccess = ConditionalEmailCheckResponse<true>;
+
+export type EmailCheckResponse<R extends boolean = boolean> = R extends true 
+? EmailCheckResponseSuccess : R extends false ? EmailCheckResponseError : EmailCheckResponseError | EmailCheckResponseSuccess;
 
 export const loginResponseSchema = z.object({
     success : z.boolean(),
