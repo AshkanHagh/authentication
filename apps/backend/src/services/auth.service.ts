@@ -1,4 +1,4 @@
-import { getIncr, hgetall } from '../database/cache';
+import { getIncr, hget, hgetall } from '../database/cache';
 import { emailSearchWithCondition, insertUserDetail } from '../database/queries';
 import { emailEvent } from '../events/email.event';
 import ErrorHandler from '../utils/errorHandler';
@@ -11,7 +11,10 @@ import type { RegisterSchema } from '../schemas/zod.schemas';
 
 export const registerService = async (email : string, password : string, name : string) : Promise<string> => {
     try {
-        const isEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
+        const emailSearchCache : string = await hget<string>(`user${email}`, 'email', 604800);
+        const isEmailExists : Pick<SelectUser, 'email'> | string = emailSearchCache && Object.keys(emailSearchCache).length 
+        ? emailSearchCache : await emailSearchWithCondition(email, 'modified', 'modified');
+
         if(isEmailExists) throw createEmailAlreadyExistsError();
         const registerBody : RegisterSchema = {email : email.toLowerCase(), password : await hashPassword(password), name};
 

@@ -16,7 +16,7 @@ const app = new Hono();
 app.use(logger());
 app.use(cors({origin : process.env.ORIGIN, credentials : true}));
 // @ts-expect-error // type
-app.use('/api/*', timeout(3500, createTimeoutError()));
+app.use('/api/*', timeout(process.env.TIMEOUT_SEC, createTimeoutError()));
 
 app.all('/', (context : Context) => context.json({success : true, message : 'Welcome to hono-backend'}, 200));
 

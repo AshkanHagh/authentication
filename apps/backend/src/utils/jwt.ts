@@ -3,9 +3,9 @@ import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { type PublicUserInfo } from '../types';
 import { cookieOptionSchema, type CookieOption } from '../schemas';
 import { createValidationError } from './customErrors';
-import { hset } from '../database/cache';
 import { setCookie } from 'hono/cookie';
 import ErrorHandler from './errorHandler';
+import { cacheEvent } from '../events/cache.event';
 
 const accessTokenExpires : number = parseInt(process.env.ACCESS_TOKEN_EXPIRE);
 const refreshTokenExpires : number = parseInt(process.env.REFRESH_TOKEN_EXPIRE);
@@ -49,7 +49,7 @@ Promise<TokenCondition<T>> => {
     try {
         const accessToken : string = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn : `${accessTokenExpires}m`});
         const refreshToken : string = jwt.sign(user, process.env.REFRESH_TOKEN, {expiresIn : `${refreshTokenExpires}d`});
-        await Promise.all([hset(`user:${user.id}`, user, 604800), hset(`user:${user.email}`, user, 604800)]);
+        cacheEvent.emit('insert_user_detail', user);
         
         setCookie(context, 'access_token', accessToken, accessTokenOption());
         setCookie(context, 'refresh_token', refreshToken, refreshTokenOption());

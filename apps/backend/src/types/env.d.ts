@@ -17,6 +17,7 @@ declare global {
       readonly SMTP_PASSWORD : string;
       readonly API_BASEURL : string;
       readonly SENTRY_KEY : string;
+      readonly TIMEOUT_SEC : string;
       readonly SENTRY_AUTH_TOKEN : string;
       readonly ORIGIN : string;
       readonly STRIPE_SECRET_KEY : string;
