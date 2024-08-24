@@ -2,29 +2,26 @@ import type { Context, Next } from 'hono';
 import { CatchAsyncError, createBadRequestError } from '../utils';
 import { getConnInfo } from 'hono/bun';
 import { incr } from '../database/cache';
-import type { ConnInfo } from 'hono/conninfo';
+import type ErrorHandler from '../utils/errorHandler';
+import { LRUCache } from 'lru-cache';
 
-const cache : Map<string, {count : number, expireAt : number}> = new Map();
+type IpData = {count  : number, expireAt?  : number};
+
 const CACHE_TTL = 60 * 1000;
 const CACHE_MAX_SIZE = 1000;
 
+const cache = new LRUCache<string, IpData>({max : CACHE_MAX_SIZE, ttl : CACHE_TTL, updateAgeOnGet : true});
+
 export const handelIpRequest = CatchAsyncError(async (context : Context, next : Next) => {
-    const connInfo : ConnInfo = getConnInfo(context);
-    const ip : string | undefined = connInfo?.remote?.address;
-    if(!ip) throw createBadRequestError();
+    const currentIpAddress : string | ErrorHandler = getConnInfo(context).remote?.address ?? createBadRequestError();
+    
+    const cachedIp: IpData = cache.get(currentIpAddress.toString()) ?? { count: 0 };
+    cachedIp.count++;
 
-    const nowTime : number = Date.now();
-    let ipData : {count : number, expireAt : number} | undefined = cache.get(ip);
+    cache.set(currentIpAddress.toString(), cachedIp);
+    if (cachedIp.count % 100 === 0) await incr(`user_ip:${currentIpAddress}`, 604800);
 
-    if(ipData || ipData!.expireAt <= nowTime) {
-        ipData!.count++;
-        ipData!.expireAt = nowTime + CACHE_TTL;
-    }
-    await incr(`user_ip:${ip}`, 604800);
-    cache.set(ip, {count : 1, expireAt : nowTime + CACHE_TTL});
-
-    if(cache.size > CACHE_MAX_SIZE) cache.delete(cache.keys().next().value);
-    context.set('currentUserIp', ip);
+    context.set('currentUserIp', currentIpAddress);
     await next();
 });
 
