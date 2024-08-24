@@ -30,11 +30,8 @@ type ConditionalEmailCheckResponse<S extends boolean> = S extends true
     ? Omit<EnforcePresence<EmailCheckResponseSchema, 'name'>, 'message'> & { success: true }
     : Omit<EnforcePresence<EmailCheckResponseSchema, 'message'>, 'name'> & { success: false };
 
-export type EmailCheckResponseError = ConditionalEmailCheckResponse<false>;
-export type EmailCheckResponseSuccess = ConditionalEmailCheckResponse<true>;
-
-export type EmailCheckResponse<R extends boolean = boolean> = R extends true 
-? EmailCheckResponseSuccess : R extends false ? EmailCheckResponseError : EmailCheckResponseError | EmailCheckResponseSuccess;
+export type EmailCheckResponse<R extends boolean = boolean> = R extends true ? ConditionalEmailCheckResponse<true>
+    : R extends false ? ConditionalEmailCheckResponse<false> : ConditionalEmailCheckResponse<true> | ConditionalEmailCheckResponse<false>;
 
 export const loginResponseSchema = z.object({
     success : z.boolean(),
