@@ -13,8 +13,8 @@ import type { VerifyAccountSchema, LoginSchema, RegisterSchema, SocialAuth, Emai
 
 export const register = CatchAsyncError(async (context: Context) => {
     const { email, password, name } = await context.req.validationData.json as RegisterSchema;
-    const activationToken : string = await registerService(email, password, name);
-    return context.json({success : true, activationToken} as RegisterResponse, 201);
+    const message : string = await registerService(email, password, name);
+    return context.json({success : true, message} as RegisterResponse, 201);
 });
 
 export const verifyAccount = CatchAsyncError(async (context : Context) => {

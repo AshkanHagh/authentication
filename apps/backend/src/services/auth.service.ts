@@ -18,9 +18,9 @@ export const registerService = async (email : string, password : string, name : 
         if(isEmailExists) throw createEmailAlreadyExistsError();
         const registerBody : RegisterSchema = {email : email.toLowerCase(), password : await hashPassword(password), name};
 
-        const { activationToken, magicLink } : ActivationLink = generateActivationLink(registerBody);
+        const { magicLink } : ActivationLink = generateActivationLink(registerBody);
         emailEvent.emit('send-magic-link', email, magicLink);
-        return activationToken;
+        return 'A verification email with a magic link has been sent to your address. Please check your inbox.';
         
     } catch (err : unknown) {
         const error = err as ErrorHandler

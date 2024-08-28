@@ -17,7 +17,7 @@ declare global {
       readonly SMTP_PASSWORD : string;
       readonly API_BASEURL : string;
       readonly SENTRY_KEY : string;
-      readonly TIMEOUT_SEC : string;
+      readonly TIMEOUT_SEC : number;
       readonly SENTRY_AUTH_TOKEN : string;
       readonly ORIGIN : string;
       readonly STRIPE_SECRET_KEY : string;
@@ -33,6 +33,7 @@ declare global {
       readonly CLOUDINARY_CLOUD_NAME : string;
       readonly CLOUDINARY_API_KEY : string;
       readonly CLOUDINARY_API_SECRET : string
+      readonly MAGIC_LINK_URL : string
     }
   }
 }

@@ -3,9 +3,7 @@ import { selectUserPublicInfoSchema } from '../models/schema';
 
 export const registerResponseSchema = z.object({
     success : z.boolean(),
-    activationToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
-        {message : 'Invalid jwt token format'}
-    )
+    message : z.string()
 });
 export type RegisterResponse = z.infer<typeof registerResponseSchema>;
 
@@ -67,3 +65,5 @@ export const refreshTokenResponseSchema = z.object({
     )
 });
 export type RefreshTokenResponse = z.infer<typeof refreshTokenResponseSchema>;
+
+export { selectUserPublicInfoSchema } from '../models/schema';
