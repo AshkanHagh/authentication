@@ -14,7 +14,7 @@ export const verifyAccountResponseSchema = z.object({
         {message : 'Invalid jwt token format'}
     )
 });
-export type verifyAccountResponse = z.infer<typeof verifyAccountResponseSchema>;
+export type VerifyAccountResponse = z.infer<typeof verifyAccountResponseSchema>;
 
 export const emailCheckResponseSchema = z.object({
     success : z.boolean(),
