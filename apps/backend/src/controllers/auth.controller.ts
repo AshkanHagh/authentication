@@ -8,7 +8,7 @@ import { emailCheckService, loginService, refreshTokenService, registerService, 
     verifyAccountService, type LoginServiceResponseDetail
 } from '../services/auth.service';
 import type { VerifyAccountSchema, LoginSchema, RegisterSchema, SocialAuth, EmailCheckSchema, 
-    RegisterResponse, verifyAccountResponse, EmailCheckResponse, LoginResponse, SocialAuthResponse, LogoutResponse, RefreshTokenResponse
+    RegisterResponse, VerifyAccountResponse, EmailCheckResponse, LoginResponse, SocialAuthResponse, LogoutResponse, RefreshTokenResponse
 } from '../schemas';
 
 export const register = CatchAsyncError(async (context: Context) => {
@@ -22,7 +22,7 @@ export const verifyAccount = CatchAsyncError(async (context : Context) => {
     const userDetail : PublicUserInfo = await verifyAccountService(token, condition, code);
 
     const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
-    return context.json({success : true, userDetail : user, accessToken} as verifyAccountResponse, 201);
+    return context.json({success : true, userDetail : user, accessToken} as VerifyAccountResponse, 201);
 });
 
 export const emailCheck = CatchAsyncError(async (context : Context) => {

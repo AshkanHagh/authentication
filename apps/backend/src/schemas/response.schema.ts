@@ -41,7 +41,14 @@ export const loginResponseSchema = z.object({
         {message : 'Invalid jwt token format'}
     ).optional()
 });
-export type LoginResponse = z.infer<typeof loginResponseSchema>;
+export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
+
+type ConditionalLoginResponse<S extends boolean> = S extends true
+    ? Omit<EnforcePresence<LoginResponseSchema, 'userDetail' | 'accessToken'>, 'activationToken' | 'success'>
+    : Omit<EnforcePresence<LoginResponseSchema, 'activationToken'>, 'userDetail' | 'accessToken' | 'success'> & {success : false};
+
+export type LoginResponse<R extends boolean = boolean> = R extends true ? ConditionalLoginResponse<true> & {success : true}
+    : ConditionalLoginResponse<false>;
 
 export const socialAuthResponseSchema = z.object({
     success : z.boolean(),
