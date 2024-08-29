@@ -43,10 +43,11 @@ export const loginResponseSchema = z.object({
     condition : z.enum(['loggedIn', 'needVerify'])
 });
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
+type EnforceRequiredKeys<T, K extends keyof T> = T & Pick<T, K>;
 
 type ConditionalLoginResponse<C extends 'loggedIn' | 'needVerify'> = C extends 'loggedIn'
-    ? Omit<EnforcePresence<LoginResponseSchema, 'userDetail' | 'accessToken'>, 'activationToken'>
-    : Omit<EnforcePresence<LoginResponseSchema, 'activationToken'>, 'userDetail' | 'accessToken'>
+    ? Omit<EnforceRequiredKeys<LoginResponseSchema, 'userDetail' | 'accessToken'>, 'activationToken'>
+    : Omit<EnforceRequiredKeys<LoginResponseSchema, 'activationToken'>, 'userDetail' | 'accessToken'>
 
 export type LoginResponse<C extends 'loggedIn' | 'needVerify'> = ConditionalLoginResponse<C> & {condition : C};
 
