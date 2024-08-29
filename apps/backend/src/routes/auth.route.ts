@@ -10,9 +10,9 @@ const authRouter = new Hono()
 
 authRouter.post('/register', some(every(handelIpRequest, validationMiddleware('json', registerSchema))), register);
 
-authRouter.get('/verify', some(every(handelIpRequest, validationMiddleware('query', verifyMagicLinkToken))), verifyAccount);
+authRouter.post('/verify', some(every(handelIpRequest, validationMiddleware('json', verifyMagicLinkToken))), verifyAccount);
 
-authRouter.post('/email-check', validationMiddleware('json', emailCheckSchema), emailCheck);
+authRouter.get('/email-check', validationMiddleware('query', emailCheckSchema), emailCheck);
 
 authRouter.post('/login', some(every(checkIpInfo, validationMiddleware('json', loginSchema))), login);
 
