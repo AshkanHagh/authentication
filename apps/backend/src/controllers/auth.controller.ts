@@ -18,7 +18,7 @@ export const register = CatchAsyncError(async (context: Context) => {
 });
 
 export const verifyAccount = CatchAsyncError(async (context : Context) => {
-    const { token, condition, code } = context.req.validationData.query as VerifyAccountSchema;
+    const { token, condition, code } = context.req.validationData.json as VerifyAccountSchema;
     const userDetail : PublicUserInfo = await verifyAccountService(token, condition, code);
 
     const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
@@ -38,16 +38,16 @@ export const emailCheck = CatchAsyncError(async (context : Context) => {
 export const login = CatchAsyncError(async (context : Context) => {
     const { email, password : reqPassword } = context.req.validationData.json as LoginSchema;
     const connectionInfo : ConnInfo = context.get('current_user_ip');
-    const userDetail : LoginServiceResponseDetail<PublicUserInfo | string> = await loginService(
+    const loginDetail : LoginServiceResponseDetail<PublicUserInfo | string> = await loginService(
         email, reqPassword, connectionInfo.remote.address
     );
 
-    const loginResponseFn = async (userDetail : PublicUserInfo) : Promise<LoginResponse> => {
+    const loginResponseFn = async (userDetail : PublicUserInfo) : Promise<LoginResponse<'loggedIn'>> => {
         const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
-        return {success : true, userDetail : user, accessToken};
+        return {success : true, condition : 'loggedIn', userDetail : user, accessToken};
     }
-    const responseDetail : LoginResponse = typeof userDetail === 'string' ? {success : true, activationToken : userDetail} 
-    : await loginResponseFn(userDetail)
+    const responseDetail : LoginResponse<'loggedIn' | 'needVerify'> = typeof loginDetail === 'string' 
+    ? {success : true, condition : 'needVerify', activationToken : loginDetail} : await loginResponseFn(loginDetail)
     return context.json(responseDetail, 201);
 });
 

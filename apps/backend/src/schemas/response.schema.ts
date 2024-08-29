@@ -39,16 +39,16 @@ export const loginResponseSchema = z.object({
     ).optional(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).optional()
+    ).optional(),
+    condition : z.enum(['loggedIn', 'needVerify'])
 });
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
 
-type ConditionalLoginResponse<S extends boolean> = S extends true
-    ? Omit<EnforcePresence<LoginResponseSchema, 'userDetail' | 'accessToken'>, 'activationToken' | 'success'>
-    : Omit<EnforcePresence<LoginResponseSchema, 'activationToken'>, 'userDetail' | 'accessToken' | 'success'> & {success : false};
+type ConditionalLoginResponse<C extends 'loggedIn' | 'needVerify'> = C extends 'loggedIn'
+    ? Omit<EnforcePresence<LoginResponseSchema, 'userDetail' | 'accessToken'>, 'activationToken'>
+    : Omit<EnforcePresence<LoginResponseSchema, 'activationToken'>, 'userDetail' | 'accessToken'>
 
-export type LoginResponse<R extends boolean = boolean> = R extends true ? ConditionalLoginResponse<true> & {success : true}
-    : ConditionalLoginResponse<false>;
+export type LoginResponse<C extends 'loggedIn' | 'needVerify'> = ConditionalLoginResponse<C> & {condition : C};
 
 export const socialAuthResponseSchema = z.object({
     success : z.boolean(),

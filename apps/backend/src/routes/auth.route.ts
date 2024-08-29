@@ -12,7 +12,7 @@ authRouter.post('/register', some(every(handelIpRequest, validationMiddleware('j
 
 authRouter.get('/verify', some(every(handelIpRequest, validationMiddleware('query', verifyMagicLinkToken))), verifyAccount);
 
-authRouter.get('/email-check', validationMiddleware('query', emailCheckSchema), emailCheck);
+authRouter.post('/email-check', validationMiddleware('json', emailCheckSchema), emailCheck);
 
 authRouter.post('/login', some(every(checkIpInfo, validationMiddleware('json', loginSchema))), login);
 
