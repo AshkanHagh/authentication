@@ -7,13 +7,12 @@ type MailOption = {
 
 export const sendEmail = async (option : MailOption) : Promise<void> => {
     const transport : nodemailer.Transporter<SMTPTransport.SentMessageInfo> = nodemailer.createTransport({
-        host : process.env.SMTP_HOST, 
-        port : process.env.SMTP_PORT || 25, 
-        service : process.env.SMTP_SERVICE,
+        host : process.env.MAIL_HOST, 
+        port : process.env.MAIL_PORT || 25, 
         auth : {
-            user : process.env.SMTP_MAIL,
-            pass : process.env.SMTP_PASSWORD
+            user : process.env.MAIL_USERNAME,
+            pass : process.env.MAIL_PASSWORD
         }
     });
-    await transport.sendMail({from : process.env.SMTP_MAIL, to : option.email, subject : option.subject, html : option.html});
+    await transport.sendMail({from : process.env.MAIL_SENDER, to : option.email, subject : option.subject, html : option.html});
 }

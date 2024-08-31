@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { selectUserPublicInfoSchema } from '../models/schema';
 
+export type MakeKeysRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
+export type Nullable<T> = {[P in keyof T]: T[P] | null | undefined};
+
 export const registerResponseSchema = z.object({
     success : z.boolean(),
     message : z.string()
@@ -9,7 +12,7 @@ export type RegisterResponse = z.infer<typeof registerResponseSchema>;
 
 export const verifyAccountResponseSchema = z.object({
     success : z.boolean(),
-    userDetail : selectUserPublicInfoSchema,
+    userDetail : selectUserPublicInfoSchema.nullish(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
     )
@@ -22,18 +25,17 @@ export const emailCheckResponseSchema = z.object({
     name : z.string().optional()
 });
 export type EmailCheckResponseSchema = z.infer<typeof emailCheckResponseSchema>;
-type EnforcePresence<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 type ConditionalEmailCheckResponse<S extends boolean> = S extends true
-    ? Omit<EnforcePresence<EmailCheckResponseSchema, 'name'>, 'message'> & { success: true }
-    : Omit<EnforcePresence<EmailCheckResponseSchema, 'message'>, 'name'> & { success: false };
+? Omit<MakeKeysRequired<EmailCheckResponseSchema, 'name'>, 'message'> & {success : true}
+: Omit<MakeKeysRequired<EmailCheckResponseSchema, 'message'>, 'name'> & {success : false};
 
-export type EmailCheckResponse<R extends boolean = boolean> = R extends true ? ConditionalEmailCheckResponse<true>
-    : R extends false ? ConditionalEmailCheckResponse<false> : ConditionalEmailCheckResponse<true> | ConditionalEmailCheckResponse<false>;
+export type EmailCheckResponse<R extends boolean = boolean> = R extends true 
+? ConditionalEmailCheckResponse<true> : ConditionalEmailCheckResponse<false>
 
 export const loginResponseSchema = z.object({
     success : z.boolean(),
-    userDetail : selectUserPublicInfoSchema.optional(),
+    userDetail : selectUserPublicInfoSchema.nullish(),
     activationToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
     ).optional(),
@@ -43,17 +45,17 @@ export const loginResponseSchema = z.object({
     condition : z.enum(['loggedIn', 'needVerify'])
 });
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
-type EnforceRequiredKeys<T, K extends keyof T> = T & Pick<T, K>;
 
-type ConditionalLoginResponse<C extends 'loggedIn' | 'needVerify'> = C extends 'loggedIn'
-    ? Omit<EnforceRequiredKeys<LoginResponseSchema, 'userDetail' | 'accessToken'>, 'activationToken'>
-    : Omit<EnforceRequiredKeys<LoginResponseSchema, 'activationToken'>, 'userDetail' | 'accessToken'>
+type LoginState = 'loggedIn' | 'needVerify';
+type ConditionalLoginResponse<C extends LoginState> = C extends 'loggedIn'
+? Omit<Pick<LoginResponseSchema, 'userDetail' | 'accessToken' | 'success' | 'condition'>, 'activationToken'>
+: Omit<Pick<LoginResponseSchema, 'activationToken' | 'condition' | 'success'>, 'userDetail' | 'accessToken'>
 
-export type LoginResponse<C extends 'loggedIn' | 'needVerify'> = ConditionalLoginResponse<C> & {condition : C};
+export type LoginResponse<C extends LoginState> = ConditionalLoginResponse<C> & {condition : C};
 
 export const socialAuthResponseSchema = z.object({
     success : z.boolean(),
-    userDetail : selectUserPublicInfoSchema.optional(),
+    userDetail : selectUserPublicInfoSchema.nullish(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
     ).optional()

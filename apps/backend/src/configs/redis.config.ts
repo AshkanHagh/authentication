@@ -9,7 +9,6 @@ const redis : Redis = new Redis(process.env.REDIS_URL, {
     },
     enableAutoPipelining : true,
     connectTimeout : 10000,
-    tls : process.env.REDIS_TLS === 'true' ? {} : undefined,
     lazyConnect : false,
 });
 

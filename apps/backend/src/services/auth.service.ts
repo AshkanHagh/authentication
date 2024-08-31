@@ -34,15 +34,21 @@ export const verifyAccountService = async <C extends VerifyAccountCondition>(act
     try {
         const newAccountCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
             const {email, password, name} : RegisterSchema = verifyActivationToken(activationToken);
-            const checkEmailExists : Pick<SelectUser, 'email'> = await emailSearchWithCondition(email, 'modified', 'modified');
-            if(checkEmailExists) throw createEmailAlreadyExistsError();
+            const emailSearchCache : string = await hget(`user:${email}`, 'email', 604800);
+            const checkEmailExists : (Pick<SelectUser, 'email'> | string) = emailSearchCache && Object.keys(emailSearchCache).length 
+            ? emailSearchCache : await emailSearchWithCondition(email, 'modified', 'modified');
 
+            if(checkEmailExists) throw createEmailAlreadyExistsError();
             return await insertUserDetail({name, email, password});
         };
         const existingCondition = async (activationToken : string) : Promise<PublicUserInfo> => {
             const { activationCode, user } = verifyActivationToken(activationToken) as VerifyActivationCodeToken;
             if(verifyCode !== activationCode) throw createInvalidVerifyCodeError();
-            return await emailSearchWithCondition(user.email, 'full', 'modified');
+
+            const emailSearchCache : PublicUserInfo = await hgetall(`user:${user.email}`, 604800);
+            return emailSearchCache && Object.keys(emailSearchCache).length ? emailSearchCache : await emailSearchWithCondition(
+                user.email, 'full', 'modified'
+            );
         };
 
         const handelCondition : Record<VerifyAccountCondition, (activationCode : string) => Promise<PublicUserInfo>> = {
@@ -58,7 +64,8 @@ export const verifyAccountService = async <C extends VerifyAccountCondition>(act
 
 export const emailCheckService = async (email : string) : Promise<PublicUserInfo | undefined> => {
     const userCacheDetail : PublicUserInfo | undefined = await hgetall(`user:${email}`, 604800);
-    return userCacheDetail && Object.keys(userCacheDetail).length ? userCacheDetail : await emailSearchWithCondition(email, 'full', 'modified')
+    return userCacheDetail && Object.keys(userCacheDetail).length ? userCacheDetail 
+    : await emailSearchWithCondition(email, 'full', 'modified')
 }
 
 export type LoginServiceResponseDetail<R> = R extends PublicUserInfo ? PublicUserInfo : string;
@@ -71,7 +78,7 @@ Promise<LoginServiceResponseDetail<R>> => {
 
         const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`, 604800);
         const {password, ...rest} = isEmailExists;
-        if(checkUserActivity) return rest as LoginServiceResponseDetail<R>;
+        if(checkUserActivity || checkUserActivity.length) return rest as LoginServiceResponseDetail<R>;
         
         const { activationCode, activationToken } = generateActivationCode({email, password : pass});
         emailEvent.emit('send-activation-code', email, activationCode);
@@ -100,7 +107,7 @@ export const refreshTokenService = async (refreshToken : string) : Promise<Publi
     try {
         const decodedUser : PublicUserInfo = decodeToken(refreshToken, process.env.REFRESH_TOKEN);
         const currentUserCache : PublicUserInfo = await hgetall(`user:${decodedUser.id}`, 604800);
-        if(!decodedUser || Object.keys(currentUserCache).length <= 0) throw createLoginRequiredError();
+        if(!decodedUser || !Object.keys(currentUserCache).length) throw createLoginRequiredError();
         return currentUserCache
         
     } catch (err : unknown) {

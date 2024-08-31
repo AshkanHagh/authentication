@@ -10,6 +10,8 @@ import { emailCheckService, loginService, refreshTokenService, registerService, 
 import type { VerifyAccountSchema, LoginSchema, RegisterSchema, SocialAuth, EmailCheckSchema, 
     RegisterResponse, VerifyAccountResponse, EmailCheckResponse, LoginResponse, SocialAuthResponse, LogoutResponse, RefreshTokenResponse
 } from '../schemas';
+import { cacheEvent } from '../events/cache.event';
+import { handelIpRequest } from '../middlewares/iphandler';
 
 export const register = CatchAsyncError(async (context: Context) => {
     const { email, password, name } = await context.req.validationData.json as RegisterSchema;
@@ -22,6 +24,7 @@ export const verifyAccount = CatchAsyncError(async (context : Context) => {
     const userDetail : PublicUserInfo = await verifyAccountService(token, condition, code);
 
     const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
+    await handelIpRequest(context.get('userIp'));
     return context.json({success : true, userDetail : user, accessToken} as VerifyAccountResponse, 201);
 });
 
@@ -48,6 +51,7 @@ export const login = CatchAsyncError(async (context : Context) => {
     }
     const responseDetail : LoginResponse<'loggedIn' | 'needVerify'> = typeof loginDetail === 'string' 
     ? {success : true, condition : 'needVerify', activationToken : loginDetail} : await loginResponseFn(loginDetail)
+    await handelIpRequest(context.get('userIp'));
     return context.json(responseDetail, 201);
 });
 
@@ -56,13 +60,15 @@ export const socialAuth = CatchAsyncError(async (context : Context) => {
     const userDetail : PublicUserInfo = await socialAuthService(name, email.toLowerCase(), image);
 
     const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
+    await handelIpRequest(context.get('userIp'));
     return context.json({success : true, userDetail : user, accessToken} as SocialAuthResponse, 201);
 });
 
 export const logout = CatchAsyncError(async (context : Context) => {
     const { id, email } = context.get('user') as PublicUserInfo;
-    deleteCookie(context, 'access_token');
-    deleteCookie(context, 'refresh_token');
+    await Promise.all([deleteCookie(context, 'access_token'), deleteCookie(context, 'refresh_token'), 
+        cacheEvent.emit('handle_refresh_token', id, 'delete'),
+    ]);
 
     await Promise.all([del(`user:${id}`), del(`user:${email}`)]);
     return context.json({success : true, message : 'User logged out successfully'} as LogoutResponse, 200);
@@ -73,5 +79,6 @@ export const refreshToken = CatchAsyncError(async (context : Context) => {
     const currentUserDetail : PublicUserInfo = await refreshTokenService(refresh_token ?? '');
 
     const accessToken : string = await sendToken(currentUserDetail, context, 'refresh');
+    await handelIpRequest(context.get('userIp'));
     return context.json({success : true, accessToken} as RefreshTokenResponse, 200);
 });

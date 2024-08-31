@@ -31,6 +31,7 @@ export const insertUserDetail = async <C extends 'emailPassword' | 'social'>(use
 
 export type ProfileDetail = Pick<SelectUser, 'image' | 'name'>;
 export const updateUserDetail = async (currentUserId : string, updatedValues : ProfileDetail) : Promise<ProfileDetail> => {
-    const updatedDetail : SelectUser[] = await db.update(userTable).set({...updatedValues}).where(eq(userTable.id, currentUserId)).returning();
+    const updatedDetail : SelectUser[] = await db.update(userTable).set({...updatedValues})
+    .where(eq(userTable.id, currentUserId)).returning();
     return updatedDetail.map(user => ({name : user.name, image : user.image})).filter(Boolean)[0];
 };

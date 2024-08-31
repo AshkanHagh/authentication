@@ -1,7 +1,17 @@
 import { z, ZodSchema } from 'zod';
 import type { Context, Next } from 'hono';
-import type { ValidationSource } from '../types';
 import { createValidationError } from '../utils';
+
+export type ValidationSource = 'json' | 'param' | 'query' | 'parseBody';
+export type ValidationDataFuncs<T> = {
+    [K in ValidationSource]? : T
+}
+
+declare module 'hono' {
+    interface HonoRequest {
+        validationData : ValidationDataFuncs<unknown>
+    }
+}
 
 export const validationMiddleware = <S>(source : ValidationSource, schema : ZodSchema) => {
     return async (context : Context, next : Next) => {

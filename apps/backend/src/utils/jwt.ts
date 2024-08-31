@@ -53,6 +53,7 @@ Promise<TokenCondition<T>> => {
         
         setCookie(context, 'access_token', accessToken, accessTokenOption());
         setCookie(context, 'refresh_token', refreshToken, refreshTokenOption());
+        cacheEvent.emit('handle_refresh_token', user.id, 'insert', refreshToken);
         return condition === 'refresh' ? accessToken as TokenCondition<T> : {accessToken, user} as TokenCondition<T>;
 
     } catch (err : unknown) {

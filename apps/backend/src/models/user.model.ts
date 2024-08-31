@@ -1,26 +1,25 @@
-import { relations } from 'drizzle-orm';
-import { pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { v4 as uuid } from 'uuid';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { userAnswersTable } from './questions.model';
 
-export const roleEnum = pgEnum('user_role_enum', ['genius-admin', 'genius-user', 'genius-creator']);
-export const userTable = pgTable('users', {
-    id : uuid('id').primaryKey().defaultRandom(),
-    name : varchar('name', {length : 255}),
-    email : varchar('email', {length : 255}).notNull(),
+export const userTable = sqliteTable('users', {
+    id : text('id').primaryKey().$defaultFn(() => uuid()),
+    name : text('name', {length : 255}).notNull(),
+    email : text('email', {length : 255}).notNull().unique(),
     password : text('password'),
-    role : roleEnum('role').default('genius-user'),
+    role : text('role', {enum : ['admin', 'support', 'moderator', 'basic']}).default('basic'),
     image : text('image'),
-    createdAt : timestamp('created_at').defaultNow(),
-    updatedAt : timestamp('updated_at').defaultNow().$onUpdate(() => new Date())
+    createdAt : text('created_At').default(sql`(current_timestamp)`),
+    updatedAt : text('updated_at').default(sql`(current_timestamp)`).$onUpdate(() => sql<string>`(current_timestamp)`)
 }, table => ({
-    emailIndex : uniqueIndex('email_index').on(table.email)
+    emailIndex : uniqueIndex('emailIndex').on(table.email)
 }));
 
-export const insertUserSchema = createInsertSchema(userTable);
+export const roleTable = sqliteTable('roles', {
+    
+});
+
 export const selectUserSchema = createSelectSchema(userTable);
+export const selectInsertSchema = createInsertSchema(userTable);
 export const selectUserPublicInfoSchema = selectUserSchema.omit({password : true});
-
-export const userTableRelations = relations(userTable, ({many}) => ({
-    answered_questions : many(userAnswersTable)
-}));
