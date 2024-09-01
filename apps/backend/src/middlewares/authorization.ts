@@ -39,10 +39,10 @@ export const isAuthenticated = CatchAsyncError(async (context : Context, next : 
     await next();
 });
 
-export const authorizedRoles = (...roles : Array<PublicUserInfo['role']>) => {
+export const authorizedRoles = (...authorizedRoles : Array<string>) => {
     return CatchAsyncError(async (context : Context, next : Next) => {
-        const currentUserDetail : PublicUserInfo = context.get('user') as PublicUserInfo;
-        if(!roles.includes(currentUserDetail?.role)) throw createForbiddenError();
+        const { roles } : PublicUserInfo = context.get('user') as PublicUserInfo;
+        if(!roles.some(role => authorizedRoles.includes(role))) throw createForbiddenError();
         await next();
     });
 };

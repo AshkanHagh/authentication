@@ -32,7 +32,7 @@ export const createTokenRefreshError = (message : string = 'Could not refresh to
     return new ErrorHandler(message, 400);
 };
 
-export const createLoginRequiredError = (message : string = 'Please login to access this resource') => {
+export const createLoginRequiredError = (message : string = 'Login required') => {
     return new ErrorHandler(message, 401);
 };
 
@@ -56,7 +56,7 @@ export const createInvalidVerifyCodeError = (message : string = 'Invalid verify 
     return new ErrorHandler(message, 400);
 };
 
-export const createEmailAlreadyExistsError = (message : string = 'Email or Username already exists') => {
+export const createEmailAlreadyExistsError = (message : string = 'Email already exists') => {
     return new ErrorHandler(message, 409);
 };
 

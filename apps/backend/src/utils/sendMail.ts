@@ -7,7 +7,7 @@ type MailOption = {
 
 export const sendEmail = async (option : MailOption) : Promise<void> => {
     const transport : nodemailer.Transporter<SMTPTransport.SentMessageInfo> = nodemailer.createTransport({
-        host : process.env.MAIL_HOST, 
+        host : process.env.MAIL_HOST,
         port : process.env.MAIL_PORT || 25, 
         auth : {
             user : process.env.MAIL_USERNAME,

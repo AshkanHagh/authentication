@@ -56,3 +56,9 @@ export const updateProfileSchema = z.object({
     message : 'At least one field (firstName, lastName, or image) must be provided'
 });
 export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>;
+
+export const paginationSchema = z.object({
+    limit : z.string().min(1).default('12'),
+    startIndex : z.string().min(1).default('0')
+});
+export type PaginationSchema = z.infer<typeof paginationSchema>;

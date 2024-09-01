@@ -21,17 +21,9 @@ export type VerifyAccountResponse = z.infer<typeof verifyAccountResponseSchema>;
 
 export const emailCheckResponseSchema = z.object({
     success : z.boolean(),
-    message : z.string().optional(),
-    name : z.string().optional()
+    message : z.string(),
 });
-export type EmailCheckResponseSchema = z.infer<typeof emailCheckResponseSchema>;
-
-type ConditionalEmailCheckResponse<S extends boolean> = S extends true
-? Omit<MakeKeysRequired<EmailCheckResponseSchema, 'name'>, 'message'> & {success : true}
-: Omit<MakeKeysRequired<EmailCheckResponseSchema, 'message'>, 'name'> & {success : false};
-
-export type EmailCheckResponse<R extends boolean = boolean> = R extends true 
-? ConditionalEmailCheckResponse<true> : ConditionalEmailCheckResponse<false>
+export type EmailCheckResponse = z.infer<typeof emailCheckResponseSchema>;
 
 export const loginResponseSchema = z.object({
     success : z.boolean(),
@@ -47,9 +39,8 @@ export const loginResponseSchema = z.object({
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
 
 type LoginState = 'loggedIn' | 'needVerify';
-type ConditionalLoginResponse<C extends LoginState> = C extends 'loggedIn'
-? Omit<Pick<LoginResponseSchema, 'userDetail' | 'accessToken' | 'success' | 'condition'>, 'activationToken'>
-: Omit<Pick<LoginResponseSchema, 'activationToken' | 'condition' | 'success'>, 'userDetail' | 'accessToken'>
+type ConditionalLoginResponse<C extends LoginState> = C extends 'loggedIn' 
+? Omit<LoginResponseSchema, 'activationToken' | 'condition'> : Omit<LoginResponseSchema, 'condition' | 'userDetail' | 'accessToken'>
 
 export type LoginResponse<C extends LoginState> = ConditionalLoginResponse<C> & {condition : C};
 

@@ -12,4 +12,4 @@ export type HandleRefreshTokenCondition = 'insert' | 'delete';
 cacheEvent.on('handle_refresh_token', async (userId : string, condition : HandleRefreshTokenCondition, refreshToken? : string) => {
     condition === 'insert' ? await sset(`refresh_token:${userId}`, refreshToken ?? '', 2 * 24 * 60 * 60 * 1000) 
     : await del(`refresh_token:${userId}`)
-})
+});

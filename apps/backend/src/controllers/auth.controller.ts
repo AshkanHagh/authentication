@@ -1,5 +1,4 @@
 import type { PublicUserInfo } from '../types';
-import type { ConnInfo } from 'hono/conninfo';
 import type { Context } from 'hono';
 import { sendToken, type ConditionResponse, CatchAsyncError } from '../utils';
 import { deleteCookie, getCookie } from 'hono/cookie';
@@ -32,7 +31,7 @@ export const emailCheck = CatchAsyncError(async (context : Context) => {
     const { email } = context.req.validationData.query as EmailCheckSchema;
     const emailCheck : undefined | PublicUserInfo = await emailCheckService(email);
 
-    const response : EmailCheckResponse = emailCheck ? {success : true, name : emailCheck.name!} : {
+    const response : EmailCheckResponse = emailCheck ? {success : true, message : 'Account already exists'} : {
         success : false, message : 'Account does not exist'
     };
     return context.json(response as EmailCheckResponse, 200);
@@ -40,11 +39,10 @@ export const emailCheck = CatchAsyncError(async (context : Context) => {
 
 export const login = CatchAsyncError(async (context : Context) => {
     const { email, password : reqPassword } = context.req.validationData.json as LoginSchema;
-    const connectionInfo : ConnInfo = context.get('current_user_ip');
+    const connectionInfo : string = context.get('current_user_ip');
     const loginDetail : LoginServiceResponseDetail<PublicUserInfo | string> = await loginService(
-        email, reqPassword, connectionInfo.remote.address
+        email, reqPassword, connectionInfo
     );
-
     const loginResponseFn = async (userDetail : PublicUserInfo) : Promise<LoginResponse<'loggedIn'>> => {
         const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
         return {success : true, condition : 'loggedIn', userDetail : user, accessToken};
@@ -52,13 +50,13 @@ export const login = CatchAsyncError(async (context : Context) => {
     const responseDetail : LoginResponse<'loggedIn' | 'needVerify'> = typeof loginDetail === 'string' 
     ? {success : true, condition : 'needVerify', activationToken : loginDetail} : await loginResponseFn(loginDetail)
     await handelIpRequest(context.get('userIp'));
-    return context.json(responseDetail, 201);
+    return context.json(responseDetail as LoginResponse<typeof responseDetail.condition>, 201);
 });
 
 export const socialAuth = CatchAsyncError(async (context : Context) => {
     const { name, image, email } = context.req.validationData.json as SocialAuth;
     const userDetail : PublicUserInfo = await socialAuthService(name, email.toLowerCase(), image);
-
+    
     const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
     await handelIpRequest(context.get('userIp'));
     return context.json({success : true, userDetail : user, accessToken} as SocialAuthResponse, 201);
@@ -80,5 +78,5 @@ export const refreshToken = CatchAsyncError(async (context : Context) => {
 
     const accessToken : string = await sendToken(currentUserDetail, context, 'refresh');
     await handelIpRequest(context.get('userIp'));
-    return context.json({success : true, accessToken} as RefreshTokenResponse, 200);
+    return context.json({success : true, userDetail : currentUserDetail, accessToken} as RefreshTokenResponse, 200);
 });

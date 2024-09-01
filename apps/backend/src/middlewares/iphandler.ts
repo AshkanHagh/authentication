@@ -6,9 +6,9 @@ import { LRUCache } from 'lru-cache';
 type IpData = {count  : number, expireAt?  : number};
 const cache = new LRUCache<string, IpData>({max : 60 * 1000, ttl : 1000, updateAgeOnGet : true});
 
-export const handelIpRequest = async (currentIpAddress : string) => {
+export const handelIpRequest = async (currentIpAddress : string) : Promise<void> => {
     const cachedIp : IpData = cache.get(currentIpAddress.toString()) ?? {count : 0};
-    cachedIp.count || await incr(`user_ip:${currentIpAddress}`, 604800)
+    cachedIp.count || await incr(`user_ip:${currentIpAddress}`, 604800);
     
     cachedIp.count++;
     cache.set(currentIpAddress.toString(), cachedIp);

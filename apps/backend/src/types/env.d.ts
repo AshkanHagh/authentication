@@ -12,7 +12,7 @@ declare global {
       readonly ACCESS_TOKEN_EXPIRE: string;
       readonly REFRESH_TOKEN_EXPIRE: string;
       readonly MAIL_HOST: string;
-      readonly MAIL_PORT: string;
+      readonly MAIL_PORT: number;
       readonly MAIL_USERNAME: string;
       readonly MAIL_PASSWORD: string;
       readonly API_BASEURL: string;
@@ -25,6 +25,7 @@ declare global {
       readonly TIMEOUT_SEC: number;
       readonly MAGIC_LINK_URL: string;
       readonly MAIL_SENDER: string;
+      readonly MAGIC_LINK_BASE_URL: string;
     }
   }
 }

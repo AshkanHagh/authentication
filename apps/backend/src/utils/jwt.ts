@@ -44,7 +44,7 @@ type GenericCondition = 'refresh' | 'register';
 export type ConditionResponse = {accessToken : string; user : PublicUserInfo};
 type TokenCondition<T> = T extends 'refresh' ?  string : ConditionResponse;
 
-export const sendToken = async <T extends GenericCondition>(user : PublicUserInfo, context : Context, condition : T) : 
+export const sendToken = async <T extends GenericCondition>(user : Partial<PublicUserInfo>, context : Context, condition : T) : 
 Promise<TokenCondition<T>> => {
     try {
         const accessToken : string = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn : `${accessTokenExpires}m`});

@@ -3,7 +3,7 @@ import type { ActivationCode, ActivationLink, SelectUser } from '../types';
 
 export const generateActivationLink = (user : Partial<SelectUser>) : ActivationLink => {
     const activationToken : string = jwt.sign(user, process.env.ACTIVATION_TOKEN, {expiresIn : '5m'});
-    return {activationToken, magicLink : `${process.env.API_BASEURL}/${process.env.MAGIC_LINK_URL}?token=${activationToken}`};
+    return {activationToken, magicLink : `${process.env.MAGIC_LINK_BASE_URL}/${process.env.MAGIC_LINK_URL}?token=${activationToken}`};
 }
 
 export const verifyActivationToken = <T>(activationToken : string) : T => {

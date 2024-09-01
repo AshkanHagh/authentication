@@ -10,5 +10,5 @@ export const updateProfile = CatchAsyncError(async (context : Context) => {
     const currentUserDetail : PublicUserInfo = context.get('user') as PublicUserInfo;
 
     const userDetail : ProfileDetail = await updateProfileService(currentUserDetail, {firstName, lastName, image});
-    return context.json({userDetail});
-})
+    return context.json({success : true, userDetail});
+});
