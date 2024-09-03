@@ -81,7 +81,7 @@ export const loginService = async <R extends PublicUserInfo | string>(email : st
 
         const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`, 604800);
         const {password, ...rest} = isEmailExists;
-        if(checkUserActivity || checkUserActivity.length) return rest as LoginServiceResponseDetail<R>;
+        if(checkUserActivity && !checkUserActivity.length) return rest as LoginServiceResponseDetail<R>;
         
         const { activationCode, activationToken } = generateActivationCode({email, password : pass});
         emailEvent.emit('send-activation-code', email, activationCode);
