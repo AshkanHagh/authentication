@@ -72,16 +72,16 @@ export const emailCheckService = async (email : string) : Promise<PublicUserInfo
 }
 
 export type LoginServiceResponseDetail<R> = R extends PublicUserInfo ? PublicUserInfo : string;
-export const loginService = async <R extends PublicUserInfo | string>(email : string, pass : string, 
-    ipAddress : string | undefined) : Promise<LoginServiceResponseDetail<R>> => {
+export const loginService = async <R extends PublicUserInfo | string>(
+    email : string, pass : string, ipAddress : string | undefined) : Promise<LoginServiceResponseDetail<R>> => {
     try {
         const isEmailExists : DetailCondition<'full', 'full'> | undefined = await emailSearchWithCondition(email, 'full', 'full');
         const passwordMatch : boolean = await comparePassword(pass, isEmailExists?.password || '');
         if(!isEmailExists || !passwordMatch) throw createEmailOrPasswordMatchError();
 
-        const checkUserActivity : string = await getIncr(`user_ip:${ipAddress}`, 604800);
+        const checkUserActivity : number = await getIncr(`user_ip:${ipAddress}`, 604800);
         const {password, ...rest} = isEmailExists;
-        if(checkUserActivity && !checkUserActivity.length) return rest as LoginServiceResponseDetail<R>;
+        if(checkUserActivity) return rest as LoginServiceResponseDetail<R>;
         
         const { activationCode, activationToken } = generateActivationCode({email, password : pass});
         emailEvent.emit('send-activation-code', email, activationCode);
