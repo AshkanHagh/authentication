@@ -39,7 +39,7 @@ export const emailCheck = CatchAsyncError(async (context : Context) => {
 
 export const login = CatchAsyncError(async (context : Context) => {
     const { email, password : reqPassword } = context.req.validationData.json as LoginSchema;
-    const connectionInfo : string = context.get('current_user_ip');
+    const connectionInfo : string = context.get('userIp');
     const loginDetail : LoginServiceResponseDetail<PublicUserInfo | string> = await loginService(
         email, reqPassword, connectionInfo
     );
