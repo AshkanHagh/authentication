@@ -30,10 +30,10 @@ export const loginResponseSchema = z.object({
     userDetail : selectUserPublicInfoSchema.nullish(),
     activationToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).optional(),
+    ).nullish(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).optional(),
+    ).nullish(),
     condition : z.enum(['loggedIn', 'needVerify'])
 });
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
@@ -49,7 +49,7 @@ export const socialAuthResponseSchema = z.object({
     userDetail : selectUserPublicInfoSchema.nullish(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).optional()
+    ).nullish()
 });
 export type SocialAuthResponse = z.infer<typeof socialAuthResponseSchema>;
 
