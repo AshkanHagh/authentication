@@ -39,7 +39,3 @@ export const hmdel = async (hashKey : string, hashIndex : string) : Promise<void
 export const sset = async (stringKey : string, stringValue : string, expireTime : number) : Promise<void> => {
     await Promise.all([redis.set(stringKey, stringValue), redis.expire(stringKey, expireTime)]);
 }
-
-export const sadd = async (setKey : string, setValue : string, expireTime : number) : Promise<void> => {
-    await Promise.all([redis.sadd(setKey, setValue), redis.expire(setKey, expireTime)]);
-}

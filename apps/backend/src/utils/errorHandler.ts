@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import type { StatusCode } from 'hono/utils/http-status';
-import * as Sentry from '@sentry/bun';
+// import * as Sentry from '@sentry/bun';
 
 class ErrorHandler extends Error {
     statusCode : StatusCode;
@@ -12,8 +12,8 @@ class ErrorHandler extends Error {
 }
 
 export const ErrorMiddleware = async (error : unknown, context : Context) => {
-    const handledError : ErrorHandler = error instanceof ErrorHandler ? error : new ErrorHandler('Internal Server Error', 500);
-    Sentry.captureException(handledError.message);
+    const handledError : ErrorHandler = error instanceof ErrorHandler ? error : new ErrorHandler('An error occurred : Internal Server Error', 500);
+    // Sentry.captureException(handledError.message);
     return context.json({success : false, message : handledError.message}, handledError.statusCode);
 };
 

@@ -3,8 +3,10 @@ import { decodeToken, type DecodedToken, createAccessTokenInvalidError, createLo
     createForbiddenError 
 } from '../utils';
 import { hgetall } from '../database/cache';
-import type { PublicUserInfo } from '../types';
+import type { PublicUserInfo, SelectUserWithPermission } from '../types';
 import { z } from 'zod';
+import type { Roles } from '../types/roles';
+import { fetchPermissionAndCombineWithUser } from '../services/auth.service';
 
 const tokenSchema = z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
     {message : 'Invalid jwt token format'}
@@ -24,25 +26,28 @@ const decodeAndValidateToken = (token : string) : DecodedToken => {
     return decodedToken;
 };
 
-const fetchUserInfo = async (userId : string): Promise<PublicUserInfo> => {
-    const user : PublicUserInfo = await hgetall<PublicUserInfo>(`user:${userId}`, 604800);
-    if (!user || Object.keys(user).length <= 0) throw createLoginRequiredError();
-    return user;
+const fetchUserInfo = async (userId : string): Promise<SelectUserWithPermission> => {
+    const user : PublicUserInfo = await hgetall(`user:${userId}`, 604800);
+    const userDetailWithRole : SelectUserWithPermission | null = await fetchPermissionAndCombineWithUser(user, 'nullable');
+    
+    if(!userDetailWithRole) throw createLoginRequiredError();
+    return userDetailWithRole;
 }
 
 export const isAuthenticated = CatchAsyncError(async (context : Context, next : Next) : Promise<void> => {
     const token : string = extractToken(context.req.header('authorization'));
     const decodedToken : DecodedToken = decodeAndValidateToken(token);
-    const user : PublicUserInfo = await fetchUserInfo(decodedToken.id);
+    const user : SelectUserWithPermission = await fetchUserInfo(decodedToken.id);
     
     context.set('user', user);
     await next();
 });
 
-export const authorizedRoles = (...authorizedRoles : Array<string>) => {
+export const authorizedRoles = (...authorizedRoles : Array<Roles>) => {
     return CatchAsyncError(async (context : Context, next : Next) => {
-        const { roles } : PublicUserInfo = context.get('user') as PublicUserInfo;
-        if(!roles.some(role => authorizedRoles.includes(role))) throw createForbiddenError();
+        const { role } = context.get('user') as SelectUserWithPermission;
+        //@ts-expect-error
+        if(![role].some(role => authorizedRoles.includes(role))) throw createForbiddenError();
         await next();
     });
 };

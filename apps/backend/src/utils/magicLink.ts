@@ -10,8 +10,12 @@ export const verifyActivationToken = <T>(activationToken : string) : T => {
     return jwt.verify(activationToken, process.env.ACTIVATION_TOKEN) as T
 }
 
-export const generateActivationCode = (user : Partial<SelectUser>) : ActivationCode => {
-    const activationCode : string = Math.floor(1000 + Math.random() * 9000).toString();
+export const generateActivationCode = <T>(user : T) : ActivationCode => {
+    const chars : string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let activationCode : string = '';
+    for (let i : number = 0; i < 6; i++) {
+        activationCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
     const activationToken : string = jwt.sign({activationCode, user}, process.env.ACTIVATION_TOKEN, {expiresIn : '5m'});
     return {activationCode, activationToken};
 }

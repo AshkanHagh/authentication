@@ -1,11 +1,12 @@
 import { EventEmitter } from 'node:events';
-import type { PublicUserInfo } from '../types';
+import type { SelectUserWithPermission } from '../types';
 import { del, hset, sset } from '../database/cache';
 
 export const cacheEvent = new EventEmitter();
 
-cacheEvent.on('insert_user_detail', async (userDetail : PublicUserInfo) => {
-    await Promise.all([hset(`user:${userDetail.id}`, userDetail, 604800), hset(`user:${userDetail.email}`, userDetail, 604800)]);
+cacheEvent.on('insert_user_detail', async (userDetail : SelectUserWithPermission) => {
+    const { permissions,  ...rest } = userDetail;
+    await Promise.all([hset(`user:${rest.id}`, rest, 604800), hset(`user:${rest.email}`, rest, 604800)]);
 });
 
 export type HandleRefreshTokenCondition = 'insert' | 'delete';

@@ -1,9 +1,10 @@
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import type { rolePermissionTable, roleTable, userRoleTable, userTable } from '../models/schema';
+import type { userTable } from '../models/schema';
 
 export type SelectUser = InferSelectModel<typeof userTable>;
 export type InsertUser = InferInsertModel<typeof userTable>;
-export type PublicUserInfo = Omit<SelectUser, 'password'> & {roles : string[], permissions : string[]};
+export type PublicUserInfo = Omit<SelectUser, 'password'>;
+export type SelectUserWithPermission = Omit<SelectUser, 'password'> & {permissions : string[]};
 
 export type ActivationLink = {
     activationToken : string; magicLink : string
@@ -16,11 +17,9 @@ export type VerifyActivationCodeToken = {
     activationCode : string; user : Pick<SelectUser, 'email' | 'password'>;
 }
 
-export type SelectRole = InferSelectModel<typeof roleTable>;
-export type InsertRole = InferInsertModel<typeof roleTable>;
+export const allPermissions = [
+    'read-users', 'delete-users', 'changing-roles', 'analytics', 'read-admins', 'update-landing-page', 'support'
+];
+export type AllPermissions = typeof allPermissions[number];
 
-export type SelectUserRole = InferSelectModel<typeof userRoleTable>;
-export type InsertUserRole = InferInsertModel<typeof userRoleTable>;
-
-export type SelectRolePermission = InferSelectModel<typeof rolePermissionTable>
-export type InsertRolePermission = InferInsertModel<typeof rolePermissionTable>
+export type SelectRolePermissions = Record<string, string[]>;

@@ -1,26 +1,19 @@
 import ErrorHandler from '../utils/errorHandler';
-import type { PublicUserInfo } from '../types';
-import type { UpdateProfileSchema } from '../schemas';
-import { hset } from '../database/cache';
-import { updateUserDetail, type ProfileDetail } from '../database/queries';
-import { uploadImage } from '../utils';
-import type { BunFile } from 'bun';
+import { allPermissions } from '../types';
+import { hmset } from '../database/cache';
+import { dashboardEvent } from '../events';
 
-export const updateProfileService = async (userDetail : PublicUserInfo, {firstName, image, lastName} : UpdateProfileSchema) : 
-Promise<ProfileDetail> => {
+export const createRoleService = async (name : string, permissionsDetail : string[]) : Promise<string> => {
     try {
-        const updatedImage : string | null = image ? userDetail.image ? await uploadImage(image as BunFile, userDetail.image) 
-        : await uploadImage(image as BunFile) : userDetail.image
-        const updatedName : string = `${firstName || userDetail.name?.split(' ')[0]} ${lastName || userDetail.name?.split(' ')[1]}`;
-        
-        const [updatedUserDetail] = await Promise.all([updateUserDetail(userDetail.id, {image : updatedImage, name : updatedName}),
-            hset(`user:${userDetail.email}`, {image : updatedImage, name : updatedName}, 604800), 
-            hset(`user:${userDetail.id}`, {image : updatedImage, name : updatedName}, 604800)
-        ]);
-        return updatedUserDetail;
-        
+        const permissionsSet : string[] = Array.from(new Set(permissionsDetail));
+        if(permissionsSet.some(role => !allPermissions.includes(role))) throw new ErrorHandler('Invalid permissions.');
+
+        await hmset('role_permissions', name, permissionsSet, 30 * 24 * 60 * 60 * 1000);
+        dashboardEvent.emit('generate_roles_type', name);
+        return 'Role and permission add successfully';
+
     } catch (err : unknown) {
         const error = err as ErrorHandler;
-        throw new ErrorHandler(`An error ocurred : ${error.message}`, error.statusCode);
+        throw new ErrorHandler(error.message, error.statusCode);
     }
 }

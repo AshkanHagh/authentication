@@ -36,7 +36,8 @@ export type CookieOption = z.infer<typeof cookieOptionSchema>;
 export const verifyMagicLinkToken = z.object({
     token : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, {message : 'Invalid jwt token format'}),
     condition : z.enum(['existingAccount', 'newAccount']).default('newAccount'),
-    code : z.string({message : 'Invalid code signature'}).min(4).trim().regex(/^\d{4}$/).optional()
+    code : z.string({message : 'Invalid code signature'}).min(6, {message : 'Code must be at least 6 characters long'}).trim()
+    .regex(/^[A-Z0-9]+$/, {message : 'Code must contain only uppercase letters and numbers'}).optional()
 });
 export type VerifyAccountSchema = z.infer<typeof verifyMagicLinkToken>;
 
@@ -48,17 +49,8 @@ export const socialAuthSchema = z.object({
 
 export type SocialAuth = z.infer<typeof socialAuthSchema>;
 
-export const updateProfileSchema = z.object({
-    firstName : z.string().min(1).regex(/^[a-zA-Z\s]+$/, {message : 'FirstName can only contain letters and spaces'}).optional(),
-    lastName : z.string().min(1).regex(/^[a-zA-Z\s]+$/, {message : 'LastName can only contain letters and spaces'}).optional(),
-    image : z.instanceof(File).optional()
-}).refine(data => data.firstName || data.lastName || data.image, {
-    message : 'At least one field (firstName, lastName, or image) must be provided'
+export const setRoleSchema = z.object({
+    name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
+    permissions : z.string({message : 'Permissions is required'}).array().min(1),
 });
-export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>;
-
-export const paginationSchema = z.object({
-    limit : z.string().min(1).default('12'),
-    startIndex : z.string().min(1).default('0')
-});
-export type PaginationSchema = z.infer<typeof paginationSchema>;
+export type SetRoleSchema = z.infer<typeof setRoleSchema>; 

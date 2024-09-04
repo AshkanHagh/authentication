@@ -3,18 +3,16 @@ import './configs/cloudinary.config';
 import { Hono, type Context} from 'hono';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
-import { timeout } from 'hono/timeout';
 
 import authRoute from './routes/auth.route';
 import dashboardRoute from './routes/dashboard.route';
 
-import { ErrorMiddleware, createRouteNotFoundError, createTimeoutError } from './utils';
+import { ErrorMiddleware, createRouteNotFoundError } from './utils';
 
 const app = new Hono();
 
 app.use(logger());
 app.use(cors({origin : process.env.ORIGIN, credentials : true}));
-// app.use('/api/*', timeout(process.env.TIMEOUT_SEC, createTimeoutError()));
 
 app.all('/', (context : Context) => context.json({success : true, message : 'Welcome to hono-backend'}, 200));
 

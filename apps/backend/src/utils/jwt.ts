@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
-import { type PublicUserInfo } from '../types';
+import { type PublicUserInfo, type SelectUserWithPermission } from '../types';
 import { cookieOptionSchema, type CookieOption } from '../schemas';
 import { createValidationError } from './customErrors';
 import { setCookie } from 'hono/cookie';
@@ -41,10 +41,10 @@ export const refreshTokenOption = () : CookieOption => {
 }
 
 type GenericCondition = 'refresh' | 'register';
-export type ConditionResponse = {accessToken : string; user : PublicUserInfo};
+export type ConditionResponse = {accessToken : string; user : SelectUserWithPermission};
 type TokenCondition<T> = T extends 'refresh' ?  string : ConditionResponse;
 
-export const sendToken = async <T extends GenericCondition>(user : Partial<PublicUserInfo>, context : Context, condition : T) : 
+export const sendToken = async <T extends GenericCondition>(user : Partial<SelectUserWithPermission>, context : Context, condition : T) : 
 Promise<TokenCondition<T>> => {
     try {
         const accessToken : string = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn : `${accessTokenExpires}m`});
