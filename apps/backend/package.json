@@ -6,7 +6,7 @@
     "start": "bun src/server.ts",
     "dev": "bun --watch src/server.ts",
     "db:generate": "bunx drizzle-kit generate",
-    "db:migrate": "bunx drizzle-kit migrate",
+    "db:migrate": "bun src/database/migrate.ts",
     "db:push": "bun drizzle-kit push",
     "db:studio": "bunx drizzle-kit studio",
     "sentry:build": "bunx tsc && bun run sentry:sourcemaps",
@@ -19,7 +19,6 @@
     "@types/bun": "latest",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/nodemailer": "^6.4.15",
-    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
     "drizzle-kit": "^0.24.0",
@@ -30,7 +29,6 @@
     "typescript-eslint": "^8.1.0"
   },
   "dependencies": {
-    "@libsql/client": "^0.10.0",
     "@sentry/bun": "^8.26.0",
     "@sentry/cli": "^2.34.1",
     "bcrypt": "^5.1.1",
@@ -42,7 +40,7 @@
     "jsonwebtoken": "^9.0.2",
     "lru-cache": "^11.0.0",
     "nodemailer": "^6.9.14",
-    "uuid": "^10.0.0",
+    "postgres": "^3.4.4",
     "zod": "^3.23.8"
   }
 }

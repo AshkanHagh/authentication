@@ -20,6 +20,8 @@ export type VerifyActivationCodeToken = {
 export const allPermissions = [
     'read-users', 'delete-users', 'changing-roles', 'analytics', 'read-admins', 'update-landing-page', 'support'
 ];
-export type AllPermissions = typeof allPermissions[number];
+export const readonlyPermissions = [
+    'read-users', 'delete-users', 'changing-roles', 'analytics', 'read-admins', 'update-landing-page', 'support'
+] as const;
 
-export type SelectRolePermissions = Record<string, string[]>;
+export type AllPermissions = typeof allPermissions[number];

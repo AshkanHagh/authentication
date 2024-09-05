@@ -14,8 +14,9 @@ import { handelIpRequest } from '../middlewares/iphandler';
 export const fetchPermissionAndCombineWithUser = async <C extends 'nullable' | 'none'>(userDetail : PublicUserInfo, condition : C) 
 : Promise<SelectUserWithPermission | null> => {
     const prefixRole : string[] = userDetail.role?.toString().split(',')!;
-    const userRolePermission = userDetail && Object.keys(userDetail).length ? condition === 'nullable' 
-    ? await findRolePermission(prefixRole) : await findRolePermission(userDetail.role!) : null;
+
+    const userRolePermission = userDetail && Object.keys(userDetail).length 
+    ? condition === 'nullable' ? await findRolePermission(prefixRole) : await findRolePermission(userDetail.role!) : null;
     return userRolePermission ? {...userDetail, role : prefixRole, permissions : userRolePermission} : null;
 }
 
