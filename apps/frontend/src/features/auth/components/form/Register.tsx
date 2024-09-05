@@ -1,23 +1,63 @@
+import { FieldErrors, SubmitHandler, useForm } from "react-hook-form"
 import Button from "../../../../components/ui/Button"
-import EmailInput from "../ui/EmailInput"
-import NameInput from "../ui/NameInput"
-import PasswordInput from "../ui/PasswordInput"
+import FromInput from "../ui/FormInput"
+import { registerSchema, FormRegisterSchema } from "../../schema/schema"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
+import EditEmail from "../ui/EditEmail"
+import { useSearchParams } from "react-router-dom"
+import { useRegisterMutation } from "../../slice/authApiSlice"
 
 export const Register = () => {
+    const [searchParams] = useSearchParams()
+    const email = searchParams.get('email') || ''
+    const [userRegister, { isLoading }] = useRegisterMutation()
+
+    const { register, handleSubmit, formState: { errors } } = useForm<FormRegisterSchema>({
+        // Form Validation
+        resolver: zodResolver(registerSchema)
+    })
+
+    const onSubmit: SubmitHandler<FormRegisterSchema> = async (data) => {
+        try {
+            const response = await userRegister({ ...data, email }).unwrap()
+            toast.success(response.message)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    // handle form error
+    const handleError = (error: FieldErrors<FormRegisterSchema>) => {
+        if (error.name) return toast.error(error.name.message)
+        if (error.password) toast.error(error.password.message)
+    }
+
+    errors && handleError(errors)
+
     return (
-        <form className="flex flex-col gap-7">
-            <h1 className="-mb-2 text-2xl font-bold text-center">
-                Unlock the&#160;
-                <span className="font-semibold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">
-                    Genius&#160;
-                </span>
-                gate
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+            <h1 className="text-2xl text-center font-semibold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">
+                Create Account&#160;
             </h1>
-            <NameInput />
-            <EmailInput />
-            <PasswordInput />
-            <Button className="tracking-widest uppercase">
-                Register
+            <div className="space-y-2">
+                <EditEmail email={email} />
+                <FromInput<FormRegisterSchema>
+                    register={register}
+                    label="name"
+                    variant="name"
+                />
+            </div>
+            <FromInput<FormRegisterSchema>
+                register={register}
+                label="password"
+                variant="password"
+            />
+            <Button
+                disabled={isLoading}
+                type="submit"
+                className="tracking-widest uppercase">
+                {isLoading ? (<span className="loading loading-ring loading-lg"></span>) : 'Register'}
             </Button>
         </form>
     )

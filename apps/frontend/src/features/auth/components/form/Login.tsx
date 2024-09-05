@@ -1,32 +1,73 @@
-import { Link } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import Button from "../../../../components/ui/Button"
-import PasswordInput from "../ui/PasswordInput"
+import FromInput from "../ui/FormInput"
+import EditEmail from "../ui/EditEmail"
+import { SubmitHandler, useForm } from "react-hook-form"
+import { loginSchema, FormLoginSchema } from "../../schema/schema"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
+import { useLoginMutation } from "../../slice/authApiSlice"
+import { useAppDispatch } from "../../../../app/hook/useAppStore"
+import { setCredential } from "../../slice/authSlice"
+import VerificationCodeModal from "../Verify/VerificationCodeModal"
+import { useState } from "react"
 
 export const Login = () => {
+    const [searchParams] = useSearchParams()
+    const [login, { isLoading }] = useLoginMutation()
+    const dispatch = useAppDispatch()
+
+    // Verification code activation token
+    const [activationToken, setActivationToken] = useState<string | undefined>(undefined)
+    const navigate = useNavigate()
+
+    // React-hook-form Validation
+    const { register, handleSubmit, formState: { errors } } = useForm<FormLoginSchema>({
+        resolver: zodResolver(loginSchema)
+    })
+
+    const onSubmit: SubmitHandler<FormLoginSchema> = async (data) => {
+        const loginData = { ...data, email }
+        try {
+            const response = await login(loginData).unwrap()
+
+            if (response.condition === "loggedIn") {
+                dispatch(setCredential(response))
+                toast.success('Login successfully')
+                navigate('/', { replace: true })
+            } else {
+                setActivationToken(response.activationToken)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
+
+    const email = searchParams.get('email') || ''
+    errors.password && toast.error(errors.password.message)
+
     return (
-        <form className="flex flex-col gap-5">
-            <h1 className="-mb-2 text-2xl font-bold text-center">
-                I'm glad you're back, shahin
-            </h1>
-            <div className="flex flex-col -space-y-3">
-                <div className="flex items-center gap-1 mb-2 ml-1 opacity-80">
-                    <p>
-                        EMAIL:&#160;
-                        <span className="opacity-70">
-                            shahin@gmail.com
-                        </span>
-                    </p>
-                    <Link to='#'>
-                        <Button variant="btn-link" className="px-0">
-                            Edit
-                        </Button>
-                    </Link>
+        <>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                <h1 className="text-2xl font-bold text-center">
+                    I'm glad you're back
+                </h1>
+                <div className="space-y-2">
+                    <EditEmail email={email} />
+                    <FromInput<FormLoginSchema>
+                        register={register}
+                        variant="password"
+                        label="password" />
                 </div>
-                <PasswordInput />
-            </div>
-            <Button className="tracking-widest uppercase" type="button">
-                Login
-            </Button>
-        </form>
+                <Button disabled={isLoading} className="tracking-widest uppercase" type="submit">
+                    {isLoading ? (<span className="loading loading-ring loading-lg"></span>) : 'Login'}
+                </Button>
+            </form>
+            {activationToken && <VerificationCodeModal
+                token={activationToken}
+                setActivationToken={setActivationToken}
+            />}
+        </>
     )
 }

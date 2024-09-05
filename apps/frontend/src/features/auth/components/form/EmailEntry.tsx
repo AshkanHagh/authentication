@@ -1,21 +1,75 @@
+import { useSearchParams } from "react-router-dom"
 import Button from "../../../../components/ui/Button"
-import EmailInput from "../ui/EmailInput"
 import GoogleButton from "../ui/GoogleButton"
+import { SubmitHandler, useForm } from "react-hook-form"
+import { EmailCheckSchema, emailCheckSchema } from '../../../../../../types'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
+import { useLazyCheckEmailQuery } from "../../slice/authApiSlice"
+import FromInput from "../ui/FormInput"
+import { useState } from "react"
 
 export const EmailEntry = () => {
+    const [searchParams, setSearchParams] = useSearchParams()
+    const [checkEmail] = useLazyCheckEmailQuery()
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+
+    const { register, handleSubmit, formState: { errors } } = useForm<EmailCheckSchema>({
+        defaultValues: {
+            email: searchParams.get('email') || ''
+        },
+        resolver: zodResolver(emailCheckSchema)
+    })
+
+    const onSubmit: SubmitHandler<EmailCheckSchema> = async (data) => {
+        
+        setIsLoading(true)
+        try {
+            const response = await checkEmail(data.email).unwrap()
+
+            // Change Query Params
+            setSearchParams(params => {
+                params.set('email', data.email)
+                response.success
+                    ?
+                    params.set('status', 'login')
+                    :
+                    params.set('status', 'register')
+
+
+                return params
+            })
+        } catch (err) {
+            console.log(err)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Email Validation Error
+    errors.email && toast.error(errors.email.message)
+
     return (
         <>
-            <form className="flex flex-col gap-7">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-7">
                 <h1 className="-mb-2 text-2xl font-bold text-center">
-                    Go to the&#160;
+                    Submit your&#160;
                     <span className="font-semibold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">
-                        Genius&#160;
+                        Email&#160;
                     </span>
-                    Gate
+                    below
                 </h1>
-                <EmailInput />
-                <Button className="tracking-widest uppercase">
-                    continue
+
+                <FromInput<EmailCheckSchema> label="email" register={register} variant="email" />
+                <Button
+                    disabled={isLoading}
+                    type="submit"
+                    className="tracking-widest uppercase"
+                >
+                    {isLoading
+                        ? <span className="loading loading-ring loading-lg"></span>
+                        : 'continue'
+                    }
                 </Button>
             </form>
             <div className="divider">OR</div>

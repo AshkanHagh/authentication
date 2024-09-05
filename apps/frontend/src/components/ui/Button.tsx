@@ -1,27 +1,32 @@
 import { twMerge } from "tailwind-merge"
-import type { PrimaryButton } from "../../types"
+import type { Button } from "../../types/types"
 
-const Button: React.FC<Partial<PrimaryButton>> = ({
+const Button: React.FC<Button> = ({
     children,
     className,
     type = 'button',
     variant = 'btn-primary',
     size,
     outline,
-    active
+    active,
+    disabled,
+    onClick
 }) => {
-    console.log(outline)
     const isOutline = outline ? 'btn-outline' : ''
     const isActive = active ? 'btn-active' : ''
-    console.log('How tot change this pe')
 
     return (
-        <button type={type} className={twMerge("btn",
-            className,
-            variant,
-            size,
-            isOutline,
-            isActive)}
+        <button
+            type={type}
+            className={twMerge("btn",
+                className,
+                variant,
+                size,
+                isOutline,
+                isActive
+            )}
+            onClick={onClick}
+            disabled={disabled}
         >
             {children}
         </button>
