@@ -1,8 +1,12 @@
 import { z } from 'zod';
+import { readonlyPermissions } from '../types';
+import { existingRoles } from '../types/roles';
 
 export const registerSchema = z.object({
     name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
-    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, 'Invalid email format'),
+    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, {
+        message : 'Invalid email format'
+    }),
     password : z.string().min(6, {message : 'Password must be 6 or more characters long'})
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])/, { 
         message : 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' 
@@ -11,12 +15,16 @@ export const registerSchema = z.object({
 export type RegisterSchema = z.infer<typeof registerSchema>;
 
 export const emailCheckSchema = z.object({
-    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, 'Invalid email format'),
+    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, {
+        message : 'Invalid email format'
+    }),
 });
 export type EmailCheckSchema = z.infer<typeof emailCheckSchema>;
 
 export const loginSchema = z.object({
-    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, 'Invalid email format'),
+    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, {
+        message : 'Invalid email format'
+    }),
     password : z.string().min(6, {message : 'Password must be 6 or more characters long'})
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])/, { 
         message : 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' 
@@ -44,13 +52,34 @@ export type VerifyAccountSchema = z.infer<typeof verifyMagicLinkToken>;
 export const socialAuthSchema = z.object({
     name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
     image : z.string().url({message : 'Invalid image URL'}),
-    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, 'Invalid email format'),
+    email : z.string().email({message : 'Invalid email address'}).regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, {
+        message : 'Invalid email format'
+    }),
 });
 
 export type SocialAuth = z.infer<typeof socialAuthSchema>;
 
 export const setRoleSchema = z.object({
     name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
-    permissions : z.string({message : 'Permissions is required'}).array().min(1),
+    permissions : z.array(z.enum(readonlyPermissions, {message : 'Invalid permission'})).min(1, {
+        message : 'At least one permission is required'
+    })
 });
-export type SetRoleSchema = z.infer<typeof setRoleSchema>; 
+export type SetRoleSchema = z.infer<typeof setRoleSchema>;
+
+export const updateRoleSchema = z.object({
+    oldname : z.string({message : 'Oldname is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {
+        message: 'Name can only contain letters and spaces'
+    }).regex(/^(?!.*admin).*$/i, {message: 'The word "admin" is not allowed'}),
+    name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
+    permissions : z.array(z.enum(readonlyPermissions, {message : 'Invalid permission'})).min(1, {
+        message : 'At least one permission is required'
+    })
+});
+export type UpdateRoleSchema = z.infer<typeof updateRoleSchema>;
+
+export const giveUserRoleSchema = z.object({
+    role : z.array(z.enum(existingRoles, {message : 'Invalid role.'})).min(1, {
+        message : 'At least one role is required.'
+    })
+})

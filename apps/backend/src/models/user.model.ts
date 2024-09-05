@@ -1,20 +1,19 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
-import { v4 as uuid } from 'uuid';
+import { index, jsonb, pgTable, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
-export const userTable = sqliteTable('users', {
-    id : text('id').primaryKey().$defaultFn(() => uuid()),
-    name : text('name', {length : 255}).notNull(),
-    email : text('email', {length : 255}).notNull().unique(),
-    password : text('password'),
-    role : text('role', {mode : 'json'}).default(['basic']).$type<string[]>(),
-    image : text('image'),
-    createdAt : text('created_At').default(sql`(current_timestamp)`),
-    updatedAt : text('updated_at').default(sql`(current_timestamp)`).$onUpdate(() => sql<string>`(current_timestamp)`)
+export const userTable = pgTable('users', {
+    id : uuid('id').primaryKey().defaultRandom(),
+    name : varchar('name', {length : 256}).notNull(),
+    email : varchar('email', {length : 256}).notNull().unique(),
+    password : varchar('password', {length : 256}),
+    role : jsonb('role').$type<string[]>().default(['basic']),
+    image : varchar('image', {length : 500}),
+    createdAt : timestamp('created_at').defaultNow(),
+    updatedAt : timestamp('updated_at').defaultNow().$onUpdateFn(() => sql`now()`)
 }, table => ({
-    emailIndex : uniqueIndex('emailIndex').on(table.email)
+    emailIndex : uniqueIndex('emailIndex').on(table.email), roleIndex : index('roleIndex').on(table.role)
 }));
 
 export const selectUserSchema = createSelectSchema(userTable);
@@ -22,4 +21,4 @@ export const InsertUserSchema = createInsertSchema(userTable);
 export const selectUserPublicInfoSchema = selectUserSchema.omit({password : true, role : true}).and(z.object({
     permissions : z.string().array(),
     role : z.string().array()
-}))
+}));

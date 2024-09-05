@@ -3,8 +3,7 @@ declare global {
     interface ProcessEnv {
       readonly PORT: string;
       readonly NODE_ENV: string;
-      readonly TURSO_DATABASE_URL: string;
-      readonly TURSO_AUTH_TOKEN: string;
+      readonly DATABASE_URL: string;
       readonly REDIS_URL: string;
       readonly ACTIVATION_TOKEN: string;
       readonly ACCESS_TOKEN: string;

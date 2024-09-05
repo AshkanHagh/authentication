@@ -1,14 +1,14 @@
 import Redis from 'ioredis';
 
 const redis : Redis = new Redis(process.env.REDIS_URL, {
-    maxRetriesPerRequest : 5,
+    maxRetriesPerRequest : 3,
     reconnectOnError : (err) => {
         const targetErrors = ['READONLY', 'ECONNRESET', 'ETIMEDOUT'];
-        if (targetErrors.some(e => err.message.includes(e))) return true
+        if (targetErrors.some(e => err.message.includes(e))) return true;
         return false;
     },
     enableAutoPipelining : true,
-    connectTimeout : 10000,
+    connectTimeout : 5000,
     lazyConnect : false,
 });
 
