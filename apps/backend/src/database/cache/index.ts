@@ -39,3 +39,11 @@ export const hmdel = async (hashKey : string, hashIndex : string) : Promise<void
 export const sset = async (stringKey : string, stringValue : string, expireTime : number) : Promise<void> => {
     await Promise.all([redis.set(stringKey, stringValue), redis.expire(stringKey, expireTime)]);
 }
+
+export const hmget = async <T>(hashKey : string, hashIndexes : string[], expireTime : number) => {
+    const [hashValues] = await Promise.all([redis.hmget(hashKey, ...hashIndexes), redis.expire(hashKey, expireTime)]);
+    return hashValues as T[];
+}
+
+export * from './dashboard.cache';
+export * from './user.cache';

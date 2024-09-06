@@ -7,14 +7,14 @@ import { emailCheckService, loginService, refreshTokenService, registerService, 
     verifyAccountService, type LoginServiceResponseDetail
 } from '../services/auth.service';
 import type { VerifyAccountSchema, LoginSchema, RegisterSchema, SocialAuth, EmailCheckSchema, 
-    RegisterResponse, VerifyAccountResponse, EmailCheckResponse, LoginResponse, SocialAuthResponse, LogoutResponse, RefreshTokenResponse
+    VerifyAccountResponse, LoginResponse, SocialAuthResponse, RefreshTokenResponse, BasicResponse
 } from '../schemas';
 import { cacheEvent } from '../events/cache.event';
 
 export const register = CatchAsyncError(async (context: Context) => {
     const { email, password, name } = await context.req.validationData.json as RegisterSchema;
     const message : string = await registerService(email, password, name);
-    return context.json({success : true, message} as RegisterResponse, 201);
+    return context.json({success : true, message} as BasicResponse, 201);
 });
 
 export const verifyAccount = CatchAsyncError(async (context : Context) => {
@@ -30,10 +30,10 @@ export const emailCheck = CatchAsyncError(async (context : Context) => {
     const { email } = context.req.validationData.query as EmailCheckSchema;
     const emailCheck : boolean = await emailCheckService(email);
 
-    const response : EmailCheckResponse = emailCheck ? {success : true, message : 'Account already exists'} : {
+    const response : BasicResponse = emailCheck ? {success : true, message : 'Account already exists'} : {
         success : false, message : 'Account does not exist'
     };
-    return context.json(response as EmailCheckResponse, 200);
+    return context.json(response as BasicResponse, 200);
 });
 
 export const login = CatchAsyncError(async (context : Context) => {
@@ -67,7 +67,7 @@ export const logout = CatchAsyncError(async (context : Context) => {
     ]);
 
     await Promise.all([del(`user:${id}`), del(`user:${email}`)]);
-    return context.json({success : true, message : 'User logged out successfully'} as LogoutResponse, 200);
+    return context.json({success : true, message : 'User logged out successfully'} as BasicResponse, 200);
 });
 
 export const refreshToken = CatchAsyncError(async (context : Context) => {

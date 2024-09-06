@@ -14,7 +14,9 @@ export const stableStringify = (obj : Record<string, any>) : string => {
     return JSON.stringify(sortedObj);
 }
 
-cacheEvent.on('insert_user_detail', async (userDetail : SelectUserWithPermission) => {
+export type HandleRefreshTokenCondition = 'insert' | 'delete';
+cacheEvent.on('insert_user_detail', async (userDetail : SelectUserWithPermission, condition : HandleRefreshTokenCondition, 
+refreshToken? : string) => {
     const { permissions,  ...rest } = userDetail;
     const userDetailCache : PublicUserInfo = await hgetall(`user:${userDetail.id}`, 604800);
 
@@ -23,14 +25,17 @@ cacheEvent.on('insert_user_detail', async (userDetail : SelectUserWithPermission
         const insertDetailHash : string = generateHash(stableStringify(rest));
 
         if(cacheHash !== insertDetailHash) {
-            await Promise.all([hset(`user:${rest.id}`, rest, 604800), hset(`user:${rest.email}`, rest, 604800)]); 
+            await Promise.all([hset(`user:${rest.id}`, rest, 604800), hset(`user:${rest.email}`, rest, 604800)]);
         }
     }
     await handelCacheInsert();
+    condition === 'insert' ? await sset(`refresh_token:${rest.id}`, refreshToken ?? '', 
+        2 * 24 * 60 * 60 * 1000
+    ) : await del(`refresh_token:${rest.id}`);
 });
 
-export type HandleRefreshTokenCondition = 'insert' | 'delete';
 cacheEvent.on('handle_refresh_token', async (userId : string, condition : HandleRefreshTokenCondition, refreshToken? : string) => {
-    condition === 'insert' ? await sset(`refresh_token:${userId}`, refreshToken ?? '', 2 * 24 * 60 * 60 * 1000) 
-    : await del(`refresh_token:${userId}`)
+    condition === 'insert' ? await sset(`refresh_token:${userId}`, refreshToken ?? '', 
+        2 * 24 * 60 * 60 * 1000
+    ) : await del(`refresh_token:${userId}`)
 });

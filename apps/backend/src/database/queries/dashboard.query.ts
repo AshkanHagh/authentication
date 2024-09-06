@@ -1,17 +1,16 @@
-import { arrayContains, eq } from 'drizzle-orm';
-import { userTable } from '../../models/user.model';
+import { sql } from 'drizzle-orm';
+import { userTable } from '../../models/schema';
 import { db } from '../index.db';
-import type { PublicUserInfo } from '../../types';
 
 export const updateUsersRole = async (oldname : string, name : string) : Promise<void> => {
-    await db.transaction(async trx => {
-        const usersRole : {user : Pick<PublicUserInfo, 'id' | 'role'>}[] = await trx.select({user : {id : userTable.id, role : userTable.role}})
-        .from(userTable).where(arrayContains(userTable.role, [oldname]));
-
-        await Promise.all(usersRole.map(async ({user}) => {
-            let updatedRoles : string[] | undefined = user.role?.filter(role => role !== oldname);
-            if(!updatedRoles?.includes(name)) updatedRoles?.push(name);
-            await trx.update(userTable).set({role : updatedRoles}).where(eq(userTable.id, user.id));
-        }));
-    })
+    await db.update(userTable).set({role : sql`(
+            SELECT jsonb_agg(
+                CASE 
+                    WHEN value = ${oldname}::text THEN ${name}::text 
+                    ELSE value 
+                END
+            ) 
+            FROM jsonb_array_elements_text(${userTable.role}) AS value
+        )`
+    }).where(sql`${userTable.role} @> ${JSON.stringify([oldname])}::jsonb`);
 }

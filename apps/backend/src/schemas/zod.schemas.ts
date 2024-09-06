@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { readonlyPermissions } from '../types';
-import { existingRoles } from '../types/roles';
+import { readonlyInitialPermissions } from '../types';
 
 export const registerSchema = z.object({
     name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
@@ -56,30 +55,19 @@ export const socialAuthSchema = z.object({
         message : 'Invalid email format'
     }),
 });
-
 export type SocialAuth = z.infer<typeof socialAuthSchema>;
 
-export const setRoleSchema = z.object({
+export const basicRoleSchema = z.object({
     name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
-    permissions : z.array(z.enum(readonlyPermissions, {message : 'Invalid permission'})).min(1, {
+    permissions : z.array(z.enum(readonlyInitialPermissions, {message : 'Invalid permission'})).min(1, {
         message : 'At least one permission is required'
     })
-});
-export type SetRoleSchema = z.infer<typeof setRoleSchema>;
+})
+export type BasicRoleSchema = z.infer<typeof basicRoleSchema>;
 
 export const updateRoleSchema = z.object({
     oldname : z.string({message : 'Oldname is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {
         message: 'Name can only contain letters and spaces'
-    }).regex(/^(?!.*admin).*$/i, {message: 'The word "admin" is not allowed'}),
-    name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
-    permissions : z.array(z.enum(readonlyPermissions, {message : 'Invalid permission'})).min(1, {
-        message : 'At least one permission is required'
     })
-});
+}).merge(basicRoleSchema);
 export type UpdateRoleSchema = z.infer<typeof updateRoleSchema>;
-
-export const giveUserRoleSchema = z.object({
-    role : z.array(z.enum(existingRoles, {message : 'Invalid role.'})).min(1, {
-        message : 'At least one role is required.'
-    })
-})

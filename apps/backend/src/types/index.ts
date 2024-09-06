@@ -17,11 +17,10 @@ export type VerifyActivationCodeToken = {
     activationCode : string; user : Pick<SelectUser, 'email' | 'password'>;
 }
 
-export const allPermissions = [
+export const initialPermissions = [
     'read-users', 'delete-users', 'changing-roles', 'analytics', 'read-admins', 'update-landing-page', 'support'
 ];
-export const readonlyPermissions = [
+export const readonlyInitialPermissions = [
     'read-users', 'delete-users', 'changing-roles', 'analytics', 'read-admins', 'update-landing-page', 'support'
 ] as const;
-
-export type AllPermissions = typeof allPermissions[number];
+export type InitialPermissions = typeof initialPermissions[number];

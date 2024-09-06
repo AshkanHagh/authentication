@@ -4,36 +4,24 @@ import { selectUserPublicInfoSchema } from '../models/schema';
 export type MakeKeysRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
 export type Nullable<T> = {[P in keyof T]: T[P] | null | undefined};
 
-export const registerResponseSchema = z.object({
-    success : z.boolean().default(false),
-    message : z.string()
-});
-export type RegisterResponse = z.infer<typeof registerResponseSchema>;
-
 export const verifyAccountResponseSchema = z.object({
     success : z.boolean().default(false),
-    userDetail : selectUserPublicInfoSchema.nullish(),
+    userDetail : selectUserPublicInfoSchema.nullable(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullish()
+    ).nullable()
 });
 export type VerifyAccountResponse = z.infer<typeof verifyAccountResponseSchema>;
 
-export const emailCheckResponseSchema = z.object({
-    success : z.boolean().default(false),
-    message : z.string(),
-});
-export type EmailCheckResponse = z.infer<typeof emailCheckResponseSchema>;
-
 export const loginResponseSchema = z.object({
     success : z.boolean().default(false),
-    userDetail : selectUserPublicInfoSchema.nullish(),
+    userDetail : selectUserPublicInfoSchema.nullable(),
     activationToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullish(),
+    ).nullable(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullish(),
+    ).nullable(),
     condition : z.enum(['loggedIn', 'needVerify'])
 });
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
@@ -46,32 +34,25 @@ export type LoginResponse<C extends LoginState> = ConditionalLoginResponse<C> & 
 
 export const socialAuthResponseSchema = z.object({
     success : z.boolean().default(false),
-    userDetail : selectUserPublicInfoSchema.nullish(),
+    userDetail : selectUserPublicInfoSchema.nullable(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullish()
+    ).nullable()
 });
 export type SocialAuthResponse = z.infer<typeof socialAuthResponseSchema>;
 
-export const logoutResponseSchema = z.object({
+export const basicResponseSchema = z.object({
     success : z.boolean().default(false),
     message : z.string().min(1)
 });
-export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
+export type BasicResponse = z.infer<typeof basicResponseSchema>;
 
 export const refreshTokenResponseSchema = z.object({
     success : z.boolean(),
-    userDetail : selectUserPublicInfoSchema.nullish(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullish()
+    ).nullable()
 });
 export type RefreshTokenResponse = z.infer<typeof refreshTokenResponseSchema>;
-
-export const setRoleResponseSchema = z.object({
-    success : z.boolean().default(false),
-    message : z.string()
-});
-export type SetRoleResponse = z.infer<typeof setRoleResponseSchema>; 
 
 export { selectUserPublicInfoSchema } from '../models/schema';

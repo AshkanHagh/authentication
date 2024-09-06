@@ -5,7 +5,6 @@ import { decodeToken, type DecodedToken, createAccessTokenInvalidError, createLo
 import { hgetall } from '../database/cache';
 import type { PublicUserInfo, SelectUserWithPermission } from '../types';
 import { z } from 'zod';
-import type { ExistingRoles } from '../types/roles';
 import { fetchPermissionAndCombineWithUser } from '../services/auth.service';
 
 const tokenSchema = z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
@@ -43,11 +42,10 @@ export const isAuthenticated = CatchAsyncError(async (context : Context, next : 
     await next();
 });
 
-export const authorizedRoles = (...authorizedRoles : Array<ExistingRoles>) => {
+export const authorizedRoles = (...authorizedRoles : Array<string>) => {
     return CatchAsyncError(async (context : Context, next : Next) => {
         const { role } = context.get('user') as SelectUserWithPermission;
-        //@ts-expect-error
-        if(!role.some(role => authorizedRoles.includes(role))) throw createForbiddenError();
+        if(!role?.some(role => authorizedRoles.includes(role))) throw createForbiddenError();
         await next();
     });
 };

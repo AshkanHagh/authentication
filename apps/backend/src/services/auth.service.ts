@@ -1,14 +1,13 @@
-import { getIncr, hget, hgetall } from '../database/cache';
+import { getIncr, hget, hgetall, findRolePermission } from '../database/cache';
 import { searchUsersByEmail, insertUserDetail, type UserSearchResult } from '../database/queries';
-import { emailEvent } from '../events/email.event';
+import { emailEvent } from '../events';
 import ErrorHandler from '../utils/errorHandler';
 import { generateActivationLink, verifyActivationToken, comparePassword, hashPassword, 
     createEmailAlreadyExistsError, createEmailOrPasswordMatchError, generateActivationCode, createInvalidVerifyCodeError,
     decodeToken, createLoginRequiredError
 } from '../utils';
 import type { ActivationLink, PublicUserInfo, SelectUser, SelectUserWithPermission, VerifyActivationCodeToken } from '../types';
-import type { RegisterSchema } from '../schemas/zod.schemas';
-import { findRolePermission } from '../database/cache/user.cache';
+import type { RegisterSchema } from '../schemas';
 import { handelIpRequest } from '../middlewares/iphandler';
 
 export const fetchPermissionAndCombineWithUser = async <C extends 'nullable' | 'none'>(userDetail : PublicUserInfo, condition : C) 

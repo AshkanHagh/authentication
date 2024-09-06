@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import type { PublicUserInfo, SelectUser, SelectUserWithPermission } from '../../types';
 import { db } from '../index.db';
 import { userTable } from '../../models/schema';
-import { findRolePermission } from '../cache/user.cache';
+import { findRolePermission } from '../cache';
 import { dashboardEvent } from '../../events';
 
 export type SelectDetailByColumn<Condition, Column> = Column extends 'password' ? Condition extends 'email' ? Pick<SelectUser, 'email'> 
@@ -43,7 +43,7 @@ type InsertDetail<C> = C extends 'social' ? Pick<SelectUser, 'email' | 'name' | 
 export const insertUserDetail = async <C extends 'emailPassword' | 'social'>(userDetail : InsertDetail<C>) 
 : Promise<PublicUserInfo> => {
     const {password, ...rest} = (await db.insert(userTable).values(userDetail).returning())[0];
-    dashboardEvent.emit('emitRoleInsert');
+    dashboardEvent.emit('insert_initial_roles');
     return rest;
 }
 

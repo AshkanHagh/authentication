@@ -5,7 +5,7 @@ import { cookieOptionSchema, type CookieOption } from '../schemas';
 import { createValidationError } from './customErrors';
 import { setCookie } from 'hono/cookie';
 import ErrorHandler from './errorHandler';
-import { cacheEvent } from '../events/cache.event';
+import { cacheEvent } from '../events';
 
 const accessTokenExpires : number = parseInt(process.env.ACCESS_TOKEN_EXPIRE);
 const refreshTokenExpires : number = parseInt(process.env.REFRESH_TOKEN_EXPIRE);
@@ -49,7 +49,7 @@ Promise<TokenCondition<T>> => {
     try {
         const accessToken : string = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn : `${accessTokenExpires}m`});
         const refreshToken : string = jwt.sign(user, process.env.REFRESH_TOKEN, {expiresIn : `${refreshTokenExpires}d`});
-        cacheEvent.emit('insert_user_detail', user);
+        cacheEvent.emit('insert_user_detail', user, 'insert', refreshToken);
         
         setCookie(context, 'access_token', accessToken, accessTokenOption());
         setCookie(context, 'refresh_token', refreshToken, refreshTokenOption());
