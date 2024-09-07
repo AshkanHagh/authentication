@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import apiSlice from "./api/apiSlice";
 import toastMiddleware from "../middleware/toastMiddleware";
 import authSlice from "../features/auth/slice/authSlice";
+import authMiddleware from "../middleware/authMiddleware";
 
 const rootReducer = combineReducers({
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -10,7 +11,8 @@ const rootReducer = combineReducers({
 
 const store = configureStore({
     reducer: rootReducer,
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(apiSlice.middleware, toastMiddleware)
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware()
+    .concat(apiSlice.middleware, authMiddleware ,toastMiddleware )
 })
 
 export default store

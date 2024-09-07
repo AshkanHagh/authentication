@@ -19,12 +19,9 @@ export const Register = () => {
     })
 
     const onSubmit: SubmitHandler<FormRegisterSchema> = async (data) => {
-        try {
-            const response = await userRegister({ ...data, email }).unwrap()
-            toast.success(response.message)
-        } catch (error) {
-            console.log(error)
-        }
+        const response = await userRegister({ ...data, email }).unwrap()
+
+        response.success && toast.success(response.message)
     }
 
     // handle form error
@@ -42,16 +39,17 @@ export const Register = () => {
             </h1>
             <div className="space-y-2">
                 <EditEmail email={email} />
-                <FromInput<FormRegisterSchema>
+                <FromInput
                     register={register}
                     label="name"
                     variant="name"
                 />
             </div>
-            <FromInput<FormRegisterSchema>
+            <FromInput
                 register={register}
                 label="password"
                 variant="password"
+                type="password"
             />
             <Button
                 disabled={isLoading}

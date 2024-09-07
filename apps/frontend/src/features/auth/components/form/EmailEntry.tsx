@@ -22,28 +22,29 @@ export const EmailEntry = () => {
     })
 
     const onSubmit: SubmitHandler<EmailCheckSchema> = async (data) => {
-        
+
         setIsLoading(true)
-        try {
-            const response = await checkEmail(data.email).unwrap()
+        const { data: response, error } = await checkEmail(data.email)
 
-            // Change Query Params
-            setSearchParams(params => {
-                params.set('email', data.email)
-                response.success
-                    ?
-                    params.set('status', 'login')
-                    :
-                    params.set('status', 'register')
-
-
-                return params
-            })
-        } catch (err) {
-            console.log(err)
-        } finally {
+        if (error) {
+            console.log(response)
             setIsLoading(false)
+            return
         }
+
+        // Change Query Params
+        setSearchParams(params => {
+            params.set('email', data.email)
+            response && response.success
+                ?
+                params.set('status', 'login')
+                :
+                params.set('status', 'register')
+
+
+            return params
+        })
+        setIsLoading(false)
     }
 
     // Email Validation Error

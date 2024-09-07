@@ -23,14 +23,14 @@ const baseQueryWithReauth = async (args: FetchArgs | string, api: BaseQueryApi, 
             const refreshResponse = await baseQuery('auth/refresh', api, extraOptions)
 
             if (refreshResponse.data) {
-                const { userDetail, accessToken } = (refreshResponse.data as RefreshTokenResponse)
+                const userDetail = (api.getState() as RootState).auth
+                const { accessToken } = (refreshResponse.data as RefreshTokenResponse)
                 api.dispatch(setCredential({ ...userDetail, accessToken }))
 
                 result = await baseQuery(args, api, { retryCount: (extraOptions?.retryCount ?? 0) + 1 })
             }
 
-        } catch (error) {
-            console.log(error)
+        } catch (err) {
             api.dispatch(logout())
         }
     }

@@ -6,8 +6,8 @@ export type AuthState = Omit<LoginResponse<'loggedIn'>, 'condition' | 'success'>
 
 
 const initialState: AuthState = {
-    userDetail: null || undefined,
-    accessToken: null || undefined
+    userDetail: undefined,
+    accessToken: undefined
 }
 
 const authSlice = createSlice({
@@ -21,8 +21,8 @@ const authSlice = createSlice({
             state.accessToken = accessToken
         },
         logout: state => {
-            state.userDetail = undefined
-            state.accessToken = undefined
+            state.userDetail = null
+            state.accessToken = null
         }
     }
 })

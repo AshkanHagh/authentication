@@ -1,5 +1,6 @@
 import { FieldValues, Path, UseFormRegister } from "react-hook-form"
 import { InputHTMLAttributes } from "react"
+import { LoginResponse } from "../../../../../types"
 
 export type FormInputVariant = 'password' | 'name' | 'email'
 
@@ -8,3 +9,5 @@ export type FormInputProps<T extends FieldValues> = {
     label: Path<T>
     variant?: FormInputVariant
 } & InputHTMLAttributes<HTMLInputElement>
+
+export type LoginResponseWithoutCondition = Omit<LoginResponse<'loggedIn'>, 'condition'>

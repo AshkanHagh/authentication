@@ -5,17 +5,15 @@ import { useVerifyMutation } from "../../slice/authApiSlice"
 import VerificationCodeInput from "./VerificationCodeInput"
 import { setCredential } from "../../slice/authSlice"
 import { useAppDispatch } from "../../../../app/hook/useAppStore"
-import { useNavigate } from "react-router-dom"
 
 type VerificationCodeModalProps = {
   token: string
-  setActivationToken: React.Dispatch<React.SetStateAction<string | undefined>>
+  setActivationToken: React.Dispatch<React.SetStateAction<string | undefined | null>>
 }
 
 const VerificationCodeModal: React.FC<VerificationCodeModalProps> = ({ token, setActivationToken }) => {
   const [verify, { isLoading }] = useVerifyMutation()
   const dispatch = useAppDispatch()
-  const navigate = useNavigate()
   const {
     values,
     inputRefs,
@@ -27,21 +25,19 @@ const VerificationCodeModal: React.FC<VerificationCodeModalProps> = ({ token, se
     const data: VerifyAccountSchema = {
       token: token,
 
-      
+
       condition: 'existingAccount',
       code: verifyCode
     }
 
-    try {
-      const response = await verify(data).unwrap()
+    const response = await verify(data).unwrap()
 
-      dispatch(setCredential(response))
-      toast.success('Login successfully')
-      setActivationToken(undefined)
-      navigate('/', { replace: true })
-    } catch (error) {
-      console.log(error)
-    }
+    if (!response.success) return
+
+    // Response Success
+    dispatch(setCredential(response))
+    toast.success('Login successfully')
+    setActivationToken(undefined)
   })
 
   return (

@@ -17,7 +17,7 @@ const EditEmail = ({ email }: EditEmailProps) => {
         })
     }
     return (
-        <button onClick={handleEditEmail} className="hover:underline">
+        <button type="button" onClick={handleEditEmail} className="hover:underline">
             <div className="flex items-center gap-1 ml-1 opacity-80">
                 <p>
                     EMAIL:&#160;

@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
+import { setCredential } from "../../slice/authSlice"
+import { useAppDispatch } from "../../../../app/hook/useAppStore"
+import { LoginResponseWithoutCondition } from "../../type/types"
 
-const EmailVerificationSuccess = () => {
+type EmailVerificationProps = {
+    userData: LoginResponseWithoutCondition
+}
+
+const EmailVerificationSuccess = ({ userData }: EmailVerificationProps) => {
     const [time, setTimer] = useState<number>(5)
+    const dispatch = useAppDispatch()
+    const from: string = sessionStorage.getItem('from') || '/'
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -14,7 +23,10 @@ const EmailVerificationSuccess = () => {
         return () => clearTimeout(timer)
     }, [])
 
-    if (time === 0) return <Navigate to='/' replace={true} />
+    if (time === 0) {
+        dispatch(setCredential(userData))
+        return <Navigate to={from} replace={true} />
+    }
 
     return (
         <div className="flex flex-col gap-2">

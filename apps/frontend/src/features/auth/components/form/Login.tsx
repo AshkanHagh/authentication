@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 import Button from "../../../../components/ui/Button"
 import FromInput from "../ui/FormInput"
 import EditEmail from "../ui/EditEmail"
@@ -18,8 +18,7 @@ export const Login = () => {
     const dispatch = useAppDispatch()
 
     // Verification code activation token
-    const [activationToken, setActivationToken] = useState<string | undefined>(undefined)
-    const navigate = useNavigate()
+    const [activationToken, setActivationToken] = useState<string | undefined | null>(undefined)
 
     // React-hook-form Validation
     const { register, handleSubmit, formState: { errors } } = useForm<FormLoginSchema>({
@@ -28,19 +27,18 @@ export const Login = () => {
 
     const onSubmit: SubmitHandler<FormLoginSchema> = async (data) => {
         const loginData = { ...data, email }
-        try {
-            const response = await login(loginData).unwrap()
+        const response = await login(loginData).unwrap()
 
-            if (response.condition === "loggedIn") {
-                dispatch(setCredential(response))
-                toast.success('Login successfully')
-                navigate('/', { replace: true })
-            } else {
-                setActivationToken(response.activationToken)
-            }
-        } catch (error) {
-            console.log(error)
+        if (!response.success) return;
+
+        if (response.condition !== "loggedIn") {
+            // Need Verify with Code
+            return setActivationToken(response.activationToken)
         }
+
+        // Login Successfully
+        dispatch(setCredential(response))
+        toast.success('Login successfully')
 
     }
 
@@ -58,6 +56,7 @@ export const Login = () => {
                     <FromInput<FormLoginSchema>
                         register={register}
                         variant="password"
+                        type="password"
                         label="password" />
                 </div>
                 <Button disabled={isLoading} className="tracking-widest uppercase" type="submit">
