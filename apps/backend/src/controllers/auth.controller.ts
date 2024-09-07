@@ -1,15 +1,17 @@
 import type { SelectUserWithPermission } from '../types';
 import type { Context } from 'hono';
-import { sendToken, type ConditionResponse, CatchAsyncError } from '../utils';
+import { sendToken, type ConditionResponse, CatchAsyncError, createUserNotFoundError } from '../utils';
 import { deleteCookie, getCookie } from 'hono/cookie';
 import { del } from '../database/cache';
 import { emailCheckService, loginService, refreshTokenService, registerService, socialAuthService, 
     verifyAccountService, type LoginServiceResponseDetail
 } from '../services/auth.service';
 import type { VerifyAccountSchema, LoginSchema, RegisterSchema, SocialAuth, EmailCheckSchema, 
-    VerifyAccountResponse, LoginResponse, SocialAuthResponse, RefreshTokenResponse, BasicResponse
+    VerifyAccountResponse, LoginResponse, SocialAuthResponse, RefreshTokenResponse, BasicResponse,
+    BasicUserIncludedResponse
 } from '../schemas';
 import { cacheEvent } from '../events/cache.event';
+import { handelIpRequest } from '../middlewares/iphandler';
 
 export const register = CatchAsyncError(async (context: Context) => {
     const { email, password, name } = await context.req.validationData.json as RegisterSchema;
@@ -76,5 +78,13 @@ export const refreshToken = CatchAsyncError(async (context : Context) => {
     const currentUserDetail : SelectUserWithPermission = await refreshTokenService(refresh_token ?? '', connectionInfo);
 
     const accessToken : string = await sendToken(currentUserDetail, context, 'refresh');
-    return context.json({success : true, userDetail : currentUserDetail, accessToken} as RefreshTokenResponse, 200);
+    return context.json({success : true, accessToken} as RefreshTokenResponse, 200);
 });
+
+export const userDetail = CatchAsyncError(async (context : Context) => {
+    const userDetail : SelectUserWithPermission = context.get('user');
+    if(!userDetail || !Object.keys(userDetail)) throw createUserNotFoundError();
+
+    await handelIpRequest(context.get('userIp'));
+    return context.json({success : true, userDetail} as BasicUserIncludedResponse, 200);
+})
