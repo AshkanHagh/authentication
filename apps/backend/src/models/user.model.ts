@@ -18,7 +18,7 @@ export const userTable = pgTable('users', {
 
 export const selectUserSchema = createSelectSchema(userTable);
 export const InsertUserSchema = createInsertSchema(userTable);
-export const selectUserPublicInfoSchema = selectUserSchema.omit({password : true, role : true}).and(z.object({
-    permissions : z.string().array(),
-    role : z.string().array()
-}));
+export const selectUserPublicInfoSchema = selectUserSchema.omit({password : true, role : true}).extend({
+    permissions : z.array(z.string()),
+    role : z.array(z.string())
+});
