@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { LoginResponse } from "../../../../../types";
 
 
-export type AuthState = Omit<LoginResponse<'loggedIn'>, 'condition' | 'success'>
+export type AuthState = Omit<LoginResponse<'loggedIn'>, 'state' | 'success'>
 
 
 const initialState: AuthState = {

@@ -26,7 +26,7 @@ const VerificationCodeModal: React.FC<VerificationCodeModalProps> = ({ token, se
       token: token,
 
 
-      condition: 'existingAccount',
+      state: 'existingAccount',
       code: verifyCode
     }
 

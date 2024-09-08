@@ -7,7 +7,7 @@ import type {
 } from "../../../../../types";
 import apiSlice from "../../../app/api/apiSlice";
 import { RegisterSchema } from "../../../../../types/index";
-import { LoginResponseWithoutCondition } from "../type/types";
+import { LoginResponseWithoutState } from "../type/types";
 
 const authApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -30,7 +30,7 @@ const authApiSlice = apiSlice.injectEndpoints({
                 body: data
             })
         }),
-        verify: builder.mutation<LoginResponseWithoutCondition, VerifyAccountSchema>({
+        verify: builder.mutation<LoginResponseWithoutState, VerifyAccountSchema>({
             query: data => ({
                 url: '/auth/verify',
                 method: 'POST',

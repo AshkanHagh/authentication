@@ -31,7 +31,7 @@ export const Login = () => {
 
         if (!response.success) return;
 
-        if (response.condition !== "loggedIn") {
+        if (response.state !== "loggedIn") {
             // Need Verify with Code
             return setActivationToken(response.activationToken)
         }

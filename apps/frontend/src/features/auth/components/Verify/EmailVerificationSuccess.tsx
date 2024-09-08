@@ -2,10 +2,10 @@ import { useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
 import { setCredential } from "../../slice/authSlice"
 import { useAppDispatch } from "../../../../app/hook/useAppStore"
-import { LoginResponseWithoutCondition } from "../../type/types"
+import { LoginResponseWithoutState } from "../../type/types"
 
 type EmailVerificationProps = {
-    userData: LoginResponseWithoutCondition
+    userData: LoginResponseWithoutState
 }
 
 const EmailVerificationSuccess = ({ userData }: EmailVerificationProps) => {

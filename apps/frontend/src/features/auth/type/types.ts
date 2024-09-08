@@ -10,4 +10,4 @@ export type FormInputProps<T extends FieldValues> = {
     variant?: FormInputVariant
 } & InputHTMLAttributes<HTMLInputElement>
 
-export type LoginResponseWithoutCondition = Omit<LoginResponse<'loggedIn'>, 'condition'>
+export type LoginResponseWithoutState = Omit<LoginResponse<'loggedIn'>, 'state'>

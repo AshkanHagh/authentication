@@ -15,7 +15,7 @@ const EmailVerification = () => {
   const verifyUser = useCallback(async (token: string) => {
     const data: VerifyAccountSchema = {
       token,
-      condition: 'newAccount'
+      state: 'newAccount'
     }
 
     await verify(data).unwrap()
