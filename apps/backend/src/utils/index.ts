@@ -3,6 +3,6 @@ export * from './customErrors';
 export * from './errorHandler';
 export * from './hash';
 export * from './jwt';
-export * from './magicLink';
+export * from './generators';
 export * from './sendMail';
 export * from './uploadImage';

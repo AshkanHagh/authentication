@@ -1,19 +1,22 @@
 import { Hono } from 'hono';
-import { createRole, updateRole } from '../controllers/dashboard.controller';
+import { createRole, giveUserRole, updateRole } from '../controllers/dashboard.controller';
 import { authorizedRoles, isAuthenticated } from '../middlewares/authorization';
 import { some, every } from 'hono/combine';
-import { setIpAddressToContext } from '../middlewares/iphandler';
 import { validationMiddleware } from '../middlewares/validation';
-import { basicRoleSchema, updateRoleSchema } from '../schemas';
+import { basicRoleSchema, giveUserRoleSchema, updateRoleSchema } from '../schemas';
 
 const dashboardRouter = new Hono();
 
-dashboardRouter.post('/role', some(every(setIpAddressToContext, isAuthenticated, authorizedRoles('admin'), 
+dashboardRouter.post('/role', some(every(isAuthenticated, authorizedRoles('admin'), 
     validationMiddleware('json', basicRoleSchema))
 ), createRole);
 
-dashboardRouter.patch('/role', some(every(setIpAddressToContext, isAuthenticated, authorizedRoles('admin'), 
+dashboardRouter.patch('/role', some(every(isAuthenticated, authorizedRoles('admin'), 
     validationMiddleware('json', updateRoleSchema))
 ), updateRole);
+
+dashboardRouter.patch('/role/:userId', some(every(isAuthenticated, authorizedRoles('admin'), 
+    validationMiddleware('json', giveUserRoleSchema))
+), giveUserRole);
 
 export default dashboardRouter;

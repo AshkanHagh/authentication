@@ -40,12 +40,12 @@ export const refreshTokenOption = () : CookieOption => {
     return cookieOption;
 }
 
-type GenericCondition = 'refresh' | 'register';
-export type ConditionResponse = {accessToken : string; user : SelectUserWithPermission};
-type TokenCondition<T> = T extends 'refresh' ?  string : ConditionResponse;
+type AuthState = 'auth' | 'refresh';
+export type AuthStateResponse = {accessToken : string; user : SelectUserWithPermission};
+type ServiceStateBaseOnAuthState<T> = T extends 'refresh' ?  string : AuthStateResponse;
 
-export const sendToken = async <T extends GenericCondition>(user : Partial<SelectUserWithPermission>, context : Context, condition : T) : 
-Promise<TokenCondition<T>> => {
+export const sendToken = async <T extends AuthState>(user : PublicUserInfo, context : Context, condition : T) : 
+Promise<ServiceStateBaseOnAuthState<T>> => {
     try {
         const accessToken : string = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn : `${accessTokenExpires}m`});
         const refreshToken : string = jwt.sign(user, process.env.REFRESH_TOKEN, {expiresIn : `${refreshTokenExpires}d`});
@@ -53,16 +53,15 @@ Promise<TokenCondition<T>> => {
         
         setCookie(context, 'access_token', accessToken, accessTokenOption());
         setCookie(context, 'refresh_token', refreshToken, refreshTokenOption());
-        cacheEvent.emit('handle_refresh_token', user.id, 'insert', refreshToken);
-        return condition === 'refresh' ? accessToken as TokenCondition<T> : {accessToken, user} as TokenCondition<T>;
+        return condition === 'refresh' ? accessToken as ServiceStateBaseOnAuthState<T> : {accessToken, user} as ServiceStateBaseOnAuthState<T>;
 
     } catch (err : unknown) {
         const error = err as ErrorHandler;
-        throw new ErrorHandler(`An error ocurred : ${error.message}`, error.statusCode);
+        throw new ErrorHandler(error.message, error.statusCode);
     }
 }
 
-export type DecodedToken = PublicUserInfo & JwtPayload;
-export const decodeToken = (token : string, secret : string) : DecodedToken => {
-    return jwt.verify(token, secret) as DecodedToken;
+export type AuthDecodedToken = PublicUserInfo & JwtPayload;
+export const decodeToken = (token : string, secret : string) : AuthDecodedToken => {
+    return jwt.verify(token, secret) as AuthDecodedToken;
 }

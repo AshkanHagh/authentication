@@ -1,6 +1,7 @@
 import type { Context, Next } from 'hono';
-import { decodeToken, type DecodedToken, createAccessTokenInvalidError, createLoginRequiredError, CatchAsyncError, 
-    createForbiddenError 
+import { decodeToken, createAccessTokenInvalidError, createLoginRequiredError, CatchAsyncError, 
+    createForbiddenError, 
+    type AuthDecodedToken
 } from '../utils';
 import { hgetall } from '../database/cache';
 import type { PublicUserInfo, SelectUserWithPermission } from '../types';
@@ -19,14 +20,14 @@ const extractToken = (authHeader : string | undefined) : string => {
     return validationDetail.data;
 }
 
-const decodeAndValidateToken = (token : string) : DecodedToken => {
-    const decodedToken : DecodedToken = decodeToken(token, process.env.ACCESS_TOKEN);
+const decodeAndValidateToken = (token : string) : AuthDecodedToken => {
+    const decodedToken : AuthDecodedToken = decodeToken(token, process.env.ACCESS_TOKEN);
     if (!decodedToken) throw createAccessTokenInvalidError();
     return decodedToken;
 };
 
 const fetchUserInfo = async (userId : string): Promise<SelectUserWithPermission> => {
-    const user : PublicUserInfo = await hgetall(`user:${userId}`, 604800);
+    const user : PublicUserInfo = await hgetall(`user:${userId}`);
     const userDetailWithRole : SelectUserWithPermission | null = await fetchPermissionAndCombineWithUser(user, 'nullable');
     
     if(!userDetailWithRole) throw createLoginRequiredError();
@@ -35,7 +36,7 @@ const fetchUserInfo = async (userId : string): Promise<SelectUserWithPermission>
 
 export const isAuthenticated = CatchAsyncError(async (context : Context, next : Next) : Promise<void> => {
     const token : string = extractToken(context.req.header('authorization'));
-    const decodedToken : DecodedToken = decodeAndValidateToken(token);
+    const decodedToken : AuthDecodedToken = decodeAndValidateToken(token);
     const user : SelectUserWithPermission = await fetchUserInfo(decodedToken.id);
     
     context.set('user', user);

@@ -42,7 +42,7 @@ export type CookieOption = z.infer<typeof cookieOptionSchema>;
 
 export const verifyMagicLinkToken = z.object({
     token : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, {message : 'Invalid jwt token format'}),
-    condition : z.enum(['existingAccount', 'newAccount']).default('newAccount'),
+    state : z.enum(['existingAccount', 'newAccount']).default('newAccount'),
     code : z.string({message : 'Invalid code signature'}).min(6, {message : 'Code must be at least 6 characters long'}).trim()
     .regex(/^[A-Z0-9]+$/, {message : 'Code must contain only uppercase letters and numbers'}).optional()
 });
@@ -58,7 +58,9 @@ export const socialAuthSchema = z.object({
 export type SocialAuth = z.infer<typeof socialAuthSchema>;
 
 export const basicRoleSchema = z.object({
-    name : z.string({message : 'Name is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {message : 'Name can only contain letters and spaces'}),
+    name : z.string({message : 'Name is required'}).min(1).regex(/^[a-z]+$/, {
+        message: 'Name can only contain lowercase English letters'
+    }).regex(/^(?!.*admin).*$/i, {message: 'The word "admin" is not allowed'}),
     permissions : z.array(z.enum(readonlyInitialPermissions, {message : 'Invalid permission'})).min(1, {
         message : 'At least one permission is required'
     })
@@ -66,8 +68,16 @@ export const basicRoleSchema = z.object({
 export type BasicRoleSchema = z.infer<typeof basicRoleSchema>;
 
 export const updateRoleSchema = z.object({
-    oldname : z.string({message : 'Oldname is required'}).min(1).regex(/^[a-zA-Z\s]+$/, {
-        message: 'Name can only contain letters and spaces'
-    })
+    oldname : z.string({message : 'Oldname is required'}).min(1).regex(/^[a-z]+$/, {
+        message: 'Name can only contain lowercase English letters'
+    }).regex(/^(?!.*admin).*$/i, {message: 'The word "admin" is not allowed'})
 }).merge(basicRoleSchema);
 export type UpdateRoleSchema = z.infer<typeof updateRoleSchema>;
+
+export const giveUserRoleSchema = z.object({
+    roles : z.array(z.object({
+        oldRole : z.string().regex(/^[a-z]+$/, {message : 'Old role must contain only lowercase English letters'}),
+        newRole : z.string().regex(/^[a-z]+$/, {message : 'New role must contain only lowercase English letters'}),
+    }), {message : 'At least one role is required'})
+});
+export type GiveUserRoleSchema = z.infer<typeof giveUserRoleSchema>;

@@ -2,43 +2,42 @@ import { z } from 'zod';
 import { selectUserPublicInfoSchema } from '../models/schema';
 
 export type MakeKeysRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
-export type Nullable<T> = {[P in keyof T]: T[P] | null | undefined};
+export type nullish<T> = {[P in keyof T]: T[P] | null | undefined};
 
 export const basicUserIncludedResponse = z.object({
     success : z.boolean().default(false),
-    userDetail : selectUserPublicInfoSchema.nullable(),
+    userDetail : selectUserPublicInfoSchema.nullish(),
 });
 export type BasicUserIncludedResponse = z.infer<typeof basicUserIncludedResponse>;
 
 export const verifyAccountResponseSchema = z.object({
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullable()
+    ).nullish()
 }).merge(basicUserIncludedResponse);
 export type VerifyAccountResponse = z.infer<typeof verifyAccountResponseSchema>;
 
 export const loginResponseSchema = z.object({
     activationToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullable(),
+    ).nullish(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullable(),
-    condition : z.enum(['loggedIn', 'needVerify'])
+    ).nullish(),
+    state : z.enum(['loggedIn', 'needVerify'])
 }).merge(basicUserIncludedResponse);;
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
 
-type LoginState = 'loggedIn' | 'needVerify';
-type ConditionalLoginResponse<C extends LoginState> = C extends 'loggedIn' 
-? Omit<LoginResponseSchema, 'activationToken' | 'condition'> : Omit<LoginResponseSchema, 'condition' | 'userDetail' | 'accessToken'>
-
-export type LoginResponse<C extends LoginState> = ConditionalLoginResponse<C> & {condition : C};
+type ConditionalLoginResponse<S> = S extends 'loggedIn' ? Omit<
+    LoginResponseSchema, 'activationToken' | 'condition'
+> : Pick<LoginResponseSchema, 'accessToken'>;
+export type LoginResponse<C extends 'loggedIn' | 'needVerify'> = ConditionalLoginResponse<C> & {condition : C};
 
 export const socialAuthResponseSchema = z.object({
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullable()
-}).merge(basicUserIncludedResponse);;
+    ).nullish()
+}).merge(basicUserIncludedResponse);
 export type SocialAuthResponse = z.infer<typeof socialAuthResponseSchema>;
 
 export const basicResponseSchema = z.object({
@@ -51,7 +50,7 @@ export const refreshTokenResponseSchema = z.object({
     success : z.boolean(),
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
         {message : 'Invalid jwt token format'}
-    ).nullable()
+    ).nullish()
 });
 export type RefreshTokenResponse = z.infer<typeof refreshTokenResponseSchema>;
 

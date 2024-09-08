@@ -14,10 +14,10 @@ type PickUserDetail = 'email' | 'full';
 type OmitUserColumns = 'password' | 'none';
 export const searchUsersByEmail = async <Condition extends PickUserDetail, Columns extends OmitUserColumns>
 (email : string, selectCondition : Condition, omitColumn : Columns) : Promise<UserSearchResult<Condition, Columns> | null> => {
+
     const selectUserWithEmailColumn = async (email : string) : Promise<UserSearchResult<Condition, Columns>> => {
         return (await db.select({email : userTable.email}).from(userTable).where(eq(userTable.email, email)))[0] as UserSearchResult<Condition, Columns>;
     }
-
     const selectUserWithOmittedColumns = async (email : string, omitColumn? : Columns) 
     : Promise<UserSearchResult<Condition, Columns> | null> => {
         const { password, ...columns } = userTable;

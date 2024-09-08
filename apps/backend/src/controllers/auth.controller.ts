@@ -1,17 +1,16 @@
 import type { SelectUserWithPermission } from '../types';
 import type { Context } from 'hono';
-import { sendToken, type ConditionResponse, CatchAsyncError, createUserNotFoundError } from '../utils';
+import { sendToken, CatchAsyncError, createUserNotFoundError, type AuthStateResponse } from '../utils';
 import { deleteCookie, getCookie } from 'hono/cookie';
-import { del } from '../database/cache';
+import { del, set } from '../database/cache';
 import { emailCheckService, loginService, refreshTokenService, registerService, socialAuthService, 
-    verifyAccountService, type LoginServiceResponseDetail
-} from '../services/auth.service';
+    verifyAccountService, type LoginRedirectionBaseOnActivity, type RedirectionStates} from '../services/auth.service';
 import type { VerifyAccountSchema, LoginSchema, RegisterSchema, SocialAuth, EmailCheckSchema, 
     VerifyAccountResponse, LoginResponse, SocialAuthResponse, RefreshTokenResponse, BasicResponse,
     BasicUserIncludedResponse
 } from '../schemas';
 import { cacheEvent } from '../events/cache.event';
-import { handelIpRequest } from '../middlewares/iphandler';
+import { wasIpActiveRecently } from '../middlewares/iphandler';
 
 export const register = CatchAsyncError(async (context: Context) => {
     const { email, password, name } = await context.req.validationData.json as RegisterSchema;
@@ -20,71 +19,73 @@ export const register = CatchAsyncError(async (context: Context) => {
 });
 
 export const verifyAccount = CatchAsyncError(async (context : Context) => {
-    const { token, condition, code } = context.req.validationData.json as VerifyAccountSchema;
-    const connectionInfo : string = context.get('userIp');
-    const userDetail : SelectUserWithPermission = await verifyAccountService(token, connectionInfo, condition, code);
+    const { token, state, code } = context.req.validationData.json as VerifyAccountSchema;
+    const ipAddress : string = context.get('userIp');
+    const userDetail : SelectUserWithPermission = await verifyAccountService(token, ipAddress, state, code);
 
-    const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
+    const { accessToken, user } : AuthStateResponse = await sendToken(userDetail, context, 'auth');
     return context.json({success : true, userDetail : user, accessToken} as VerifyAccountResponse, 201);
 });
 
 export const emailCheck = CatchAsyncError(async (context : Context) => {
     const { email } = context.req.validationData.query as EmailCheckSchema;
-    const emailCheck : boolean = await emailCheckService(email);
+    const emailCheckResponse : boolean = await emailCheckService(email);
 
-    const response : BasicResponse = emailCheck ? {success : true, message : 'Account already exists'} : {
+    const response : BasicResponse = emailCheckResponse ? {success : true, message : 'Account already exists'} : {
         success : false, message : 'Account does not exist'
     };
     return context.json(response as BasicResponse, 200);
 });
 
+const loginResponseFn = async (userDetail : SelectUserWithPermission, context : Context) : Promise<LoginResponse<'loggedIn'>> => {
+    const { accessToken, user } : AuthStateResponse = await sendToken(userDetail, context, 'auth');
+    return {success : true, state : 'loggedIn', userDetail : user, accessToken} as LoginResponse<'loggedIn'>;
+}
+
 export const login = CatchAsyncError(async (context : Context) => {
     const { email, password : reqPassword } = context.req.validationData.json as LoginSchema;
-    const connectionInfo : string = context.get('userIp');
-    const loginDetail : LoginServiceResponseDetail<SelectUserWithPermission | string> = await loginService(
-        email, reqPassword, connectionInfo
+    const ipAddress : string = context.get('userIp');
+    const redirectionState : RedirectionStates = await wasIpActiveRecently(ipAddress) ? 'loggedIn' : 'needVerify';
+
+    const currentUserState : LoginRedirectionBaseOnActivity<typeof redirectionState> = await loginService(email, reqPassword, 
+        ipAddress, redirectionState
     );
-    const loginResponseFn = async (userDetail : SelectUserWithPermission) : Promise<LoginResponse<'loggedIn'>> => {
-        const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
-        return {success : true, condition : 'loggedIn', userDetail : user, accessToken} as LoginResponse<'loggedIn'>;
-    }
-    const responseDetail : LoginResponse<'loggedIn' | 'needVerify'> = typeof loginDetail === 'string' 
-    ? {success : true, condition : 'needVerify', activationToken : loginDetail} : await loginResponseFn(loginDetail)
-    return context.json(responseDetail as LoginResponse<typeof responseDetail.condition>, 201);
+    const responseDetail = currentUserState.state === 'needVerify' ? {success : true, state : 'needVerify', 
+        activationToken : currentUserState.activationToken} : await loginResponseFn(currentUserState.userDetail, context);
+    return context.json(responseDetail, 201);
 });
 
 export const socialAuth = CatchAsyncError(async (context : Context) => {
     const { name, image, email } = context.req.validationData.json as SocialAuth;
-    const connectionInfo : string = context.get('userIp');
-    const userDetail : SelectUserWithPermission = await socialAuthService(name, email.toLowerCase(), image, connectionInfo);
+    const ipAddress : string = context.get('userIp');
+    const userDetail : SelectUserWithPermission = await socialAuthService(name, email.toLowerCase(), image, ipAddress);
     
-    const { accessToken, user } : ConditionResponse = await sendToken(userDetail, context, 'register');
+    const { accessToken, user } : AuthStateResponse = await sendToken(userDetail, context, 'auth');
     return context.json({success : true, userDetail : user, accessToken} as SocialAuthResponse, 201);
 });
 
 export const logout = CatchAsyncError(async (context : Context) => {
     const { id, email } = context.get('user') as SelectUserWithPermission;
     await Promise.all([deleteCookie(context, 'access_token'), deleteCookie(context, 'refresh_token'), 
-        cacheEvent.emit('handle_refresh_token', id, 'delete'),
+        cacheEvent.emit('handle_refresh_token', id, 'delete'), del(`user:${id}`), del(`user:${email}`)
     ]);
-
-    await Promise.all([del(`user:${id}`), del(`user:${email}`)]);
     return context.json({success : true, message : 'User logged out successfully'} as BasicResponse, 200);
 });
 
 export const refreshToken = CatchAsyncError(async (context : Context) => {
     const refresh_token : string | undefined = getCookie(context, 'refresh_token');
-    const connectionInfo : string = context.get('userIp');
-    const currentUserDetail : SelectUserWithPermission = await refreshTokenService(refresh_token ?? '', connectionInfo);
+    const ipAddress : string = context.get('userIp');
+    const currentUserDetail : SelectUserWithPermission = await refreshTokenService(refresh_token ?? '', ipAddress);
 
     const accessToken : string = await sendToken(currentUserDetail, context, 'refresh');
     return context.json({success : true, accessToken} as RefreshTokenResponse, 200);
 });
 
-export const userDetail = CatchAsyncError(async (context : Context) => {
-    const userDetail : SelectUserWithPermission = context.get('user');
-    if(!userDetail || !Object.keys(userDetail)) throw createUserNotFoundError();
+export const me = CatchAsyncError(async (context : Context) => {
+    const myDetail : SelectUserWithPermission = context.get('user');
+    if(!myDetail || !Object.keys(myDetail).length) throw createUserNotFoundError();
 
-    await handelIpRequest(context.get('userIp'));
-    return context.json({success : true, userDetail} as BasicUserIncludedResponse, 200);
+    const myIpAddress : string = context.get('userIp');
+    if(!await wasIpActiveRecently(myIpAddress)) await set(`ip_activity:${myIpAddress}`, '1', 4 * 24 * 60 * 60);
+    return context.json({success : true, userDetail : myDetail} as BasicUserIncludedResponse, 200);
 })
