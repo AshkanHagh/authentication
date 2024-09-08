@@ -12,7 +12,7 @@ const useGetUser = (...noAuthRequiredRoutes: string[]): boolean => {
     const userDetail = useAppSelector(state => state.auth.userDetail)
 
     useEffect(() => {
-        if (noAuthRequiredRoutes.some(route => location.pathname.includes(route)) || userDetail) {
+        if (noAuthRequiredRoutes && noAuthRequiredRoutes.some(route => location.pathname.includes(route)) || userDetail) {
             dispatch(logout())
             return
         }

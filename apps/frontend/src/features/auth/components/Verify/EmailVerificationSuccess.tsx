@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { Navigate } from "react-router-dom"
 import { setCredential } from "../../slice/authSlice"
 import { useAppDispatch } from "../../../../app/hook/useAppStore"
 import { LoginResponseWithoutState } from "../../type/types"
+import { toast } from "sonner"
 
 type EmailVerificationProps = {
     userData: LoginResponseWithoutState
@@ -11,7 +11,6 @@ type EmailVerificationProps = {
 const EmailVerificationSuccess = ({ userData }: EmailVerificationProps) => {
     const [time, setTimer] = useState<number>(5)
     const dispatch = useAppDispatch()
-    const from: string = sessionStorage.getItem('from') || '/'
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -23,10 +22,12 @@ const EmailVerificationSuccess = ({ userData }: EmailVerificationProps) => {
         return () => clearTimeout(timer)
     }, [])
 
-    if (time === 0) {
-        dispatch(setCredential(userData))
-        return <Navigate to={from} replace={true} />
-    }
+    useEffect(() => {
+        if (time === 0) {
+            toast.success('Welcome')
+            dispatch(setCredential(userData))
+        }
+    }, [time])
 
     return (
         <div className="flex flex-col gap-2">
