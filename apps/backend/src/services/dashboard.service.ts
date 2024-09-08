@@ -1,7 +1,7 @@
 import ErrorHandler from '../utils/errorHandler';
 import { type InitialPermissions, type SelectUser } from '../types';
-import { findRoleCache, hget, hmdel, hmset, hset, updateAllCacheUsersRole } from '../database/cache';
-import { updateUserRole, updateUsersRole } from '../database/queries';
+import { findRoleCache, hget, hmdel, hmset, hset, scanUsersCache, updateAllCacheUsersRole } from '../database/cache';
+import { selectUsers, updateUserRole, updateUsersRole } from '../database/queries';
 import type { GiveUserRoleSchema } from '../schemas';
 
 export const updateRoleService = async (oldname : string, name : string, permissions : InitialPermissions[]) => {

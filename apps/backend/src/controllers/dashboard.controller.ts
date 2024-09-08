@@ -3,6 +3,8 @@ import { CatchAsyncError } from '../utils';
 import type { BasicResponse, BasicRoleSchema, GiveUserRoleSchema, UpdateRoleSchema } from '../schemas';
 import { giveUserRoleService, updateRoleService } from '../services/dashboard.service';
 import { hmset } from '../database/cache';
+import { selectUsers } from '../database/queries';
+import type { PublicUserInfo } from '../types';
 
 export const createRole = CatchAsyncError(async (context : Context) => {
     const { name, permissions } = context.req.validationData.json as BasicRoleSchema;
@@ -23,6 +25,11 @@ export const giveUserRole = CatchAsyncError(async (context : Context) => {
     const message = await giveUserRoleService(userId, roleUpdates);
     return context.json({success : true, message} as BasicResponse, 201);
 });
+
+export const users = CatchAsyncError(async (context : Context) => {
+    const users : PublicUserInfo[] = await selectUsers();
+    return context.json({success : true, users});
+})
 
 // Next update tasks
 // 1. Update the user role and grant him new permissions with the socket
