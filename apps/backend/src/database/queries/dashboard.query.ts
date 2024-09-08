@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 import { userTable } from '../../models/schema';
 import { db } from '../index.db';
-import type { PublicUserInfo, SelectUser } from '../../types';
+import type { SelectUser } from '../../types';
 import type { GiveUserRoleSchema } from '../../schemas';
 
 export const updateUsersRole = async (oldname : string, name : string) : Promise<void> => {
@@ -30,8 +30,4 @@ export const updateUserRole = async (userId : string, roleUpdates : GiveUserRole
         )`
     }).where(eq(userTable.id, userId)).returning({role : userTable.role});
     return updatedRole;
-}
-
-export const selectUsers = async () : Promise<PublicUserInfo[]> => {
-    return db.query.userTable.findMany({columns : {password : false}, orderBy : (table, {desc}) => desc(table.createdAt)})
 }

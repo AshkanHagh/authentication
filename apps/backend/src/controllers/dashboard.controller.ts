@@ -1,10 +1,8 @@
 import type { Context } from 'hono';
 import { CatchAsyncError } from '../utils';
-import type { BasicResponse, BasicRoleSchema, GiveUserRoleSchema, UpdateRoleSchema } from '../schemas';
+import type { BasicResponse, BasicRoleSchema, GiveUserRoleSchema, RolesResponseSchema, UpdateRoleSchema } from '../schemas';
 import { giveUserRoleService, updateRoleService } from '../services/dashboard.service';
-import { hmset } from '../database/cache';
-import { selectUsers } from '../database/queries';
-import type { PublicUserInfo } from '../types';
+import { hgetall, hmset } from '../database/cache';
 
 export const createRole = CatchAsyncError(async (context : Context) => {
     const { name, permissions } = context.req.validationData.json as BasicRoleSchema;
@@ -26,10 +24,10 @@ export const giveUserRole = CatchAsyncError(async (context : Context) => {
     return context.json({success : true, message} as BasicResponse, 201);
 });
 
-export const users = CatchAsyncError(async (context : Context) => {
-    const users : PublicUserInfo[] = await selectUsers();
-    return context.json({success : true, users});
-})
+export const existingRoles = CatchAsyncError(async (context : Context) => {
+    const roles : string[] = Object.keys(await hgetall('role_permissions'));
+    return context.json({success : true, roles} as RolesResponseSchema, 200);
+});
 
 // Next update tasks
 // 1. Update the user role and grant him new permissions with the socket

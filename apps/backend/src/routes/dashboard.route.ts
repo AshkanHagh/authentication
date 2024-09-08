@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { createRole, giveUserRole, updateRole, users } from '../controllers/dashboard.controller';
+import { createRole, existingRoles, giveUserRole, updateRole } from '../controllers/dashboard.controller';
 import { authorizedRoles, isAuthenticated } from '../middlewares/authorization';
 import { some, every } from 'hono/combine';
 import { validationMiddleware } from '../middlewares/validation';
@@ -19,6 +19,6 @@ dashboardRouter.patch('/role/:userId', some(every(isAuthenticated, authorizedRol
     validationMiddleware('json', giveUserRoleSchema))
 ), giveUserRole);
 
-dashboardRouter.get('/users', some(every(isAuthenticated, authorizedRoles('admin'))), users);
+dashboardRouter.get('/roles', some(every(isAuthenticated, authorizedRoles('admin'))), existingRoles);
 
 export default dashboardRouter;

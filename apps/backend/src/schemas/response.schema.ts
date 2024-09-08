@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectUserPublicInfoSchema, selectUserSchema } from '../models/schema';
+import { selectUserPublicInfoSchema } from '../models/schema';
 
 export type MakeKeysRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
 export type nullish<T> = {[P in keyof T]: T[P] | null | undefined};
@@ -54,10 +54,10 @@ export const refreshTokenResponseSchema = z.object({
 });
 export type RefreshTokenResponse = z.infer<typeof refreshTokenResponseSchema>;
 
-export const usersResponseSchema = z.object({
+export const rolesResponseSchema = z.object({
     success : z.boolean().default(false),
-    users : z.array(selectUserSchema.omit({role : true}).extend({role : z.array(z.string())}))
+    roles : z.array(z.string())
 });
-export type UsersResponseSchema = z.infer<typeof usersResponseSchema>;
+export type RolesResponseSchema = z.infer<typeof rolesResponseSchema>;
 
 export { selectUserPublicInfoSchema } from '../models/schema';
