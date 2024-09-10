@@ -29,9 +29,9 @@ export const loginResponseSchema = z.object({
 export type LoginResponseSchema = z.infer<typeof loginResponseSchema>;
 
 type ConditionalLoginResponse<S> = S extends 'loggedIn' ? Omit<
-    LoginResponseSchema, 'activationToken' | 'condition'
+    LoginResponseSchema, 'activationToken' | 'state'
 > : Pick<LoginResponseSchema, 'accessToken'>;
-export type LoginResponse<C extends 'loggedIn' | 'needVerify'> = ConditionalLoginResponse<C> & {condition : C};
+export type LoginResponse<C extends 'loggedIn' | 'needVerify'> = ConditionalLoginResponse<C> & {state : C};
 
 export const socialAuthResponseSchema = z.object({
     accessToken : z.string().trim().regex(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/, 
