@@ -52,7 +52,7 @@ export const login = CatchAsyncError(async (context : Context) => {
     );
     const responseDetail = currentUserState.state === 'needVerify' ? {success : true, state : 'needVerify', 
         activationToken : currentUserState.activationToken} : await loginResponseFn(currentUserState.userDetail, context);
-    return context.json(responseDetail, 201);
+    return context.json(responseDetail as LoginResponse<'loggedIn' | 'needVerify'>, 201);
 });
 
 export const socialAuth = CatchAsyncError(async (context : Context) => {
