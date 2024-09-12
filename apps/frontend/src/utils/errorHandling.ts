@@ -4,6 +4,7 @@ import { ResponseError } from "../types/types";
 
 
 const handleFetchBaseQueryError = (error: FetchBaseQueryError): string => {
+    console.log(error)
     if (typeof error.status === 'number') {
         return (error.data as ResponseError).message || 'An unknown error has occurred'
     }

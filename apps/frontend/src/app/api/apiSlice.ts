@@ -4,7 +4,7 @@ import { RefreshTokenResponse } from "../../../../types";
 import { logout, setCredential } from "../../features/auth/slice/authSlice";
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_BASE_URL,
+    baseUrl: 'api',
     prepareHeaders: (headers, { getState }) => {
         const token: string | undefined | null = (getState() as RootState).auth.accessToken
         if (token) {
