@@ -17,7 +17,7 @@
   "devDependencies": {
     "@eslint/js": "^9.10.0",
     "@faker-js/faker": "^9.0.0",
-    "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/bun": "latest",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/nodemailer": "^6.4.15",
@@ -33,7 +33,7 @@
   "dependencies": {
     "@sentry/bun": "^8.28.0",
     "@sentry/cli": "^2.35.0",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cloudinary": "^2.4.0",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",

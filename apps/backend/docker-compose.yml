@@ -1,26 +1,57 @@
-version: '3.8'
-
 services:
-  db:
-    image: postgres:16
-    container_name: postgres_db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+  backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7319/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ports:
-      - "5432:5432"
+      - 7319:7319
+    networks:
+      - app
+  nginx:
+    image: nginx:stable-alpine3.20-perl
+    ports:
+      - 80:80
+    depends_on:
+      - backend
     volumes:
-      - pgdata:/var/lib/postgresql/data
-
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - app
   redis:
-    image: redis:latest
-    container_name: redis_db
+    image: redis:alpine
     ports:
-      - "6379:6379"
+      - 6379:6379
     volumes:
-      - redisdata:/data
-
+      - redis-data:/data/redis
+    networks:
+      - app
+    restart: unless-stopped
+  postgres:
+    image: postgres:16.4-alpine
+    env_file:
+      - ./.env
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/data/postgres
+    networks:
+      - app
+    restart: unless-stopped
+networks:
+  app:
+    driver: bridge
 volumes:
-  pgdata:
-  redisdata:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
