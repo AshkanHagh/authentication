@@ -12,20 +12,22 @@ const EmailVerification = () => {
   const navigate = useNavigate()
 
   // Function verify the user
-  const verifyUser = useCallback(async (token: string) => {
-    const data: VerifyAccountSchema = {
-      token,
-      state: 'newAccount'
-    }
+  const verifyUser = useCallback(
+    async (token: string) => {
+      const data: VerifyAccountSchema = {
+        token,
+        state: "newAccount"
+      }
 
-    await verify(data).unwrap()
-  }, [verify])
-
+      await verify(data).unwrap()
+    },
+    [verify]
+  )
 
   useEffect(() => {
-    const token = searchParams.get('token')
+    const token = searchParams.get("token")
     if (!token) {
-      navigate('/', { replace: true })
+      navigate("/", { replace: true })
       return
     }
 
@@ -33,7 +35,7 @@ const EmailVerification = () => {
     verifyUser(token)
   }, [verifyUser])
 
-  let content;
+  let content
   if (isLoading) content = <Loading />
   if (isError) content = <EmailVerificationError />
   if (data) content = <EmailVerificationSuccess userData={data} />

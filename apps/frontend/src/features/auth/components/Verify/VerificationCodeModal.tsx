@@ -8,25 +8,25 @@ import { useAppDispatch } from "../../../../app/hook/useAppStore"
 
 type VerificationCodeModalProps = {
   token: string
-  setActivationToken: React.Dispatch<React.SetStateAction<string | undefined | null>>
+  setActivationToken: React.Dispatch<
+    React.SetStateAction<string | undefined | null>
+  >
 }
 
-const VerificationCodeModal: React.FC<VerificationCodeModalProps> = ({ token, setActivationToken }) => {
+const VerificationCodeModal: React.FC<VerificationCodeModalProps> = ({
+  token,
+  setActivationToken
+}) => {
   const [verify, { isLoading }] = useVerifyMutation()
   const dispatch = useAppDispatch()
-  const {
-    values,
-    inputRefs,
-    handleChange,
-    handleKeyDown,
-    onInputsComplete } = useVerificationCode(6)
+  const { values, inputRefs, handleChange, handleKeyDown, onInputsComplete } =
+    useVerificationCode(6)
 
-  onInputsComplete(async verifyCode => {
+  onInputsComplete(async (verifyCode) => {
     const data: VerifyAccountSchema = {
       token: token,
 
-
-      state: 'existingAccount',
+      state: "existingAccount",
       code: verifyCode
     }
 
@@ -36,7 +36,7 @@ const VerificationCodeModal: React.FC<VerificationCodeModalProps> = ({ token, se
 
     // Response Success
     dispatch(setCredential(response))
-    toast.success('Login successfully')
+    toast.success("Login successfully")
     setActivationToken(undefined)
   })
 
@@ -44,7 +44,9 @@ const VerificationCodeModal: React.FC<VerificationCodeModalProps> = ({ token, se
     <>
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 px-2">
         <div className="bg-base-100 rounded-xl py-5 px-2 shadow-2xl shadow-stone-950 xs:px-5">
-          <h1 className="xs:tracking-wider text-center font-light">The verification code has been sent to your email</h1>
+          <h1 className="xs:tracking-wider text-center font-light">
+            The verification code has been sent to your email
+          </h1>
           <div className="grid grid-cols-6 justify-items-center p-2 py-5">
             {values.map((val, index) => (
               <VerificationCodeInput
